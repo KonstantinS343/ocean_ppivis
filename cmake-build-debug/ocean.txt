@@ -1,0 +1,38 @@
+6
+5
+0 0 salmon 8 1 4 20 Маша
+0 1 corals 100
+0 2 salmon 3 0 2 80 Серега
+0 2 salmon 5 1 2 60 Аня
+0 3 corals 20
+0 3 puffer 7 0 1 60 Киря
+0 4 kril 100
+1 0 anchovys 10 1 0 50 Влада
+1 1 seaweed 60
+1 1 kril 40
+1 2 anchovys 12 0 0 30 Антон
+1 2 puffer 1 1 2 10 Ира
+1 3 clown 3 1 1 30 Лиза
+1 3 salmon 10 0 6 100 Стасик
+1 4 seaweed 40
+1 4 anchovys 14 1 0 70 Лера
+2 0 clown 2 0 0 60 Леха
+2 0 seaweed 30
+2 2 corals 80
+2 2 puffer 6 1 1 80 Алина
+2 3 clown 7 0 0 50 Женя
+2 4 seaweed 80
+2 4 kril 100
+3 0 kril 50
+3 1 puffer 5 0 1 70 Костя
+3 2 anchovys 3 1 0 50 Жанна
+3 2 seaweed 10
+3 3 kril 80
+3 4 corals 70
+3 4 kril 90
+4 0 shark 10 0 9 50 Артем
+4 3 anchovys 4 1 0 90 Валера
+4 3 corals 100
+4 4 kril 100
+5 1 clown 4 1 0 100 Даша
+5 3 shark 20 1 8 70 Ариана

@@ -1,0 +1,3 @@
+/home/konstantin/CLionProjects/Ocean/cmake-build-debug/CMakeFiles/Ocean.dir
+/home/konstantin/CLionProjects/Ocean/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/konstantin/CLionProjects/Ocean/cmake-build-debug/CMakeFiles/rebuild_cache.dir
