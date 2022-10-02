@@ -143,6 +143,19 @@ void ocean_system::next() {
     for(int i = 0; i < ocean_field.size(); i++){
         for(int j = 0; j < ocean_field.at(i).size(); j++){
             for(auto & alive: ocean_field.at(i).at(j)){
+                if(ocean_field.at(i).at(j).size() == 0){
+                    continue;
+                }
+
+                if(alive == nullptr){
+                    for(auto iterator = ocean_field.at(i).at(j).begin(); iterator != ocean_field.at(i).at(j).end(); iterator++){
+                        if(*iterator == alive) {
+                            ocean_field.at(i).at(j).erase(iterator);
+                            break;
+                        }
+                    }
+                    continue;
+                }
                 if(alive->getType() == 0){
                     if(alive->check_die()){
                         for(auto iterator = ocean_field.at(i).at(j).begin(); iterator != ocean_field.at(i).at(j).end(); iterator++){
@@ -154,10 +167,14 @@ void ocean_system::next() {
                         delete alive;
                         continue;
                     }
-                    previous = points;
+                   previous.first = alive->getPoint().first;
+                   previous.second = alive->getPoint().second;
+
                    points = alive->go(ocean_field);
                    if(points.first != -1){
-                       if(previous.first != points.first && previous.second != points.second) {
+                       if(previous.first == points.first && previous.second == points.second) {
+
+                       }else{
                            ocean_field.at(points.first).at(points.second).push_back(alive);
 
                            for (auto iterator = ocean_field.at(i).at(j).begin();
@@ -171,7 +188,7 @@ void ocean_system::next() {
                        }
                    }
 
-                   if(alive->propagate()){
+                   if(alive->propagate() && ocean_field.at(i).at(j).size()<4){
                        temp[0] = 0;
                        temp[1] = alive->getSex();
                        temp[2] = 1;
@@ -191,10 +208,13 @@ void ocean_system::next() {
                         delete alive;
                         continue;
                     }
-                    previous = points;
+                    previous.first = alive->getPoint().first;
+                    previous.second = alive->getPoint().second;
                     points = alive->go(ocean_field);
                     if(points.first != -1){
-                        if(previous.first != points.first && previous.second != points.second) {
+                        if(previous.first == points.first && previous.second == points.second) {
+
+                        }else{
                             ocean_field.at(points.first).at(points.second).push_back(alive);
 
                             for (auto iterator = ocean_field.at(i).at(j).begin();
@@ -218,7 +238,7 @@ void ocean_system::next() {
                         continue;
                     }
 
-                    if(alive->propagate()){
+                    if(alive->propagate() && ocean_field.at(i).at(j).size()<4){
                         temp[0] = 0;
                         temp[1] = alive->getSex();
                         temp[2] = 1;
@@ -238,10 +258,14 @@ void ocean_system::next() {
                         delete alive;
                         continue;
                     }
-                    previous = points;
+                    previous.first = alive->getPoint().first;
+                    previous.second = alive->getPoint().second;
+
                     points = alive->go(ocean_field);
                     if(points.first != -1){
-                        if(previous.first != points.first && previous.second != points.second) {
+                        if(previous.first == points.first && previous.second == points.second) {
+
+                        }else{
                             ocean_field.at(points.first).at(points.second).push_back(alive);
 
                             for (auto iterator = ocean_field.at(i).at(j).begin();
@@ -264,7 +288,7 @@ void ocean_system::next() {
                         continue;
                     }
 
-                    if(alive->propagate()){
+                    if(alive->propagate() && ocean_field.at(i).at(j).size()<4){
                         temp[0] = 0;
                         temp[1] = alive->getSex();
                         temp[2] = 1;
@@ -283,10 +307,14 @@ void ocean_system::next() {
                         delete alive;
                         continue;
                     }
-                    previous = points;
+                    previous.first = alive->getPoint().first;
+                    previous.second = alive->getPoint().second;
+
                     points = alive->go(ocean_field);
                     if(points.first != -1){
-                        if(previous.first != points.first && previous.second != points.second) {
+                        if(previous.first == points.first && previous.second == points.second) {
+
+                        }else{
                             ocean_field.at(points.first).at(points.second).push_back(alive);
 
                             for (auto iterator = ocean_field.at(i).at(j).begin();
@@ -310,7 +338,7 @@ void ocean_system::next() {
                         continue;
                     }
 
-                    if(alive->propagate()){
+                    if(alive->propagate() && ocean_field.at(i).at(j).size()<4){
                         temp[0] = 0;
                         temp[1] = alive->getSex();
                         temp[2] = 1;
@@ -353,11 +381,15 @@ void ocean_system::next() {
                         delete alive;
                         continue;
                     }
-                    previous = points;
+                    previous.first = alive->getPoint().first;
+                    previous.second = alive->getPoint().second;
+
                     points = alive->go(ocean_field);
                     if(points.first != -1){
-                        if(previous.first != points.first && previous.second != points.second) {
-                            ocean_field.at(previous.first).at(previous.second).push_back(alive);
+                        if(previous.first == points.first && previous.second == points.second) {
+
+                        }else{
+                            ocean_field.at(points.first).at(points.second).push_back(alive);
 
                             for (auto iterator = ocean_field.at(i).at(j).begin();
                                  iterator != ocean_field.at(i).at(j).end(); iterator++) {
@@ -379,7 +411,7 @@ void ocean_system::next() {
                         continue;
                     }
 
-                    if(alive->propagate()){
+                    if(alive->propagate() && ocean_field.at(i).at(j).size()<4){
                         temp[0] = 0;
                         temp[1] = alive->getSex();
                         temp[2] = 1;
@@ -398,11 +430,15 @@ void ocean_system::next() {
                         delete alive;
                         continue;
                     }
-                    previous = points;
+                    previous.first = alive->getPoint().first;
+                    previous.second = alive->getPoint().second;
+
                     points = alive->go(ocean_field);
 
                     if(points.first != -10){
-                        if(previous.first != points.first && previous.second != points.second) {
+                        if(previous.first == points.first && previous.second == points.second) {
+
+                        }else{
                             ocean_field.at(points.first).at(points.second).push_back(alive);
 
                             for (auto iterator = ocean_field.at(i).at(j).begin();
@@ -421,5 +457,7 @@ void ocean_system::next() {
             }
         }
     }
+    system("clear");
+    show_ocean();
 
 }

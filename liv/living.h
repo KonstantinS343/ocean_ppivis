@@ -58,7 +58,9 @@ public:
 
     virtual void setPropogate() = 0;
 
-    virtual living* getEntity() = 0;
+    virtual std::pair<int,int> getPoint() = 0;
+
+    virtual int getAmouont() = 0;
 
 };
 
@@ -99,7 +101,7 @@ public:
 
     void setPropogate() override;
 
-    living* getEntity() override;
+    std::pair<int,int> getPoint() override;
 
     ~shark();
 private:
@@ -121,13 +123,10 @@ private:
 
     int step = 0;
 
-    bool food = false;
-
     bool propogate = false;
 
     bool stop = false;
 
-    living* entity;
 };
 
 class salmon : public living{//лосось
@@ -166,7 +165,7 @@ public:
 
     void setPropogate() override;
 
-    living* getEntity() override;
+    std::pair<int,int> getPoint() override;
 
     ~salmon();
 private:
@@ -194,7 +193,6 @@ private:
 
     bool stop = false;
 
-    living* entity;
 };
 
 class puffer : public living{//фугу
@@ -231,7 +229,7 @@ public:
 
     std::string getName() override;
 
-    living* getEntity() override;
+    std::pair<int,int> getPoint() override;
 
     void setPropogate() override;
 
@@ -264,8 +262,6 @@ private:
     bool can_hide = false;
 
     std::pair <int,int> point_hide;
-
-    living* entity;
 };
 
 class clown : public living{//рыба-клоун
@@ -304,7 +300,7 @@ public:
 
     void setPropogate() override;
 
-    living* getEntity() override;
+    std::pair<int,int> getPoint() override;
 
     ~clown();
 private:
@@ -335,8 +331,6 @@ private:
     bool can_hide = false;
 
     std::pair <int,int> point_hide;
-
-    living* entity;
 };
 
 class anchovys : public living{//анчоус
@@ -375,7 +369,7 @@ public:
 
     void setPropogate() override;
 
-    living* getEntity() override;
+    std::pair<int,int> getPoint() override;
 
     ~anchovys();
 private:
@@ -407,7 +401,6 @@ private:
 
     std::pair <int,int> point_hide;
 
-    living* entity;
 };
 
 class kril : public living{
@@ -446,11 +439,10 @@ public:
 
     void setPropogate() override;
 
-    living* getEntity() override;
+    std::pair<int,int> getPoint() override;
 
     ~kril();
 private:
-    int size;
 
     std::string name;
 
@@ -463,8 +455,6 @@ private:
     std::pair<int,int> points;
 
     bool stop = false;
-
-    living* entity;
 };
 
 class corals : public living{
@@ -503,19 +493,19 @@ public:
 
     void setStop() override;
 
-    living* getEntity() override;
+    std::pair<int,int> getPoint() override;
+
+    int getAmount();
 
     ~corals();
 private:
-    int size;
+    int amount;
 
     int step = 0;
 
     std::string name;
 
     const state type = state::corals;
-
-    living* entity;
 };
 
 class seaweed : public living{
@@ -554,11 +544,13 @@ public:
 
     void setStop() override;
 
-    living* getEntity() override;
+    std::pair<int,int> getPoint() override;
+
+    int getAmount();
 
     ~seaweed();
 private:
-    int size;
+    int amount;
 
     int step = 0;
 
@@ -566,7 +558,6 @@ private:
 
     const state type = state::seaweed;
 
-    living* entity;
 };
 
 #endif //OCEAN_LIVING_H

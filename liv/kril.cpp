@@ -6,14 +6,13 @@
 kril::kril(int temp[]) {
     points.first = temp[0];
     points.second = temp[1];
-    this->size = temp[2];
+    this->hp = temp[2];
     this->name = "  ";
 
 }
 
 bool kril::propagate() {
     hp = 100;
-    size = 100;
 
     return true;
 }
@@ -21,7 +20,7 @@ bool kril::propagate() {
 std::string kril::who() {return "криль  "+name;}
 
 bool kril::check_die() {
-    if(hp < 0 || size < 0){
+    if(hp < 0){
         return true;
     }else{
         return false;
@@ -31,19 +30,19 @@ kril::~kril() {
     delete this;
 }
 
-std::string kril::getInfo() {return "\tHP: "+ std::to_string(this->hp) + "\tAmount: " + std::to_string(this->size);}
+std::string kril::getInfo() {return "\tHP: "+ std::to_string(this->hp);}
 
 state kril::getType() {
     return state::kril;
 }
 
 bool kril::hide(const std::vector<std::vector<std::vector<struct living *>>> &) {
-    size-=10;
+    hp-=10;
     return false;
 }
 
 bool kril::eat(living *, const std::vector<std::vector<std::vector<struct living *>>> &) {
-
+    return false;
 }
 
 std::pair<int, int> kril::go(const std::vector<std::vector<std::vector<struct living *>>> & field) {
@@ -51,6 +50,8 @@ std::pair<int, int> kril::go(const std::vector<std::vector<std::vector<struct li
     step++;
     hp-=10;
     point = see(field);
+    points.first = point.first;
+    points.second = point.second;
 
     if(stop){
         point.first = -10;
@@ -247,7 +248,7 @@ std::pair<int, int> kril::see(const std::vector<std::vector<std::vector<struct l
 }
 
 int kril::getSize() {
-    return this->size;
+    return 0;
 }
 
 sex kril::getSex() {
@@ -274,7 +275,7 @@ void kril::setPropogate() {
 
 }
 
-living *kril::getEntity() {
-    return this;
+std::pair<int, int> kril::getPoint() {
+    return points;
 }
 

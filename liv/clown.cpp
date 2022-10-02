@@ -54,8 +54,10 @@ state clown::getType() {
     return state::clown;
 }
 
-bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & field) {
-    for (auto &alive: field.at(points.first).at(points.second)) {
+bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & field){
+    can_hide = false;
+
+    for(auto &alive: field.at(points.first).at(points.second)) {
         if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
             if (alive->getSize() > 20) {
                 point_hide.first = points.first;
@@ -123,16 +125,18 @@ bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & 
 bool clown::eat(living * who,const std::vector<std::vector<std::vector<struct living *>>> & field) {
     if(!food) {
         if (who->hide(field)) {
-            std::cout << who->who() << " hid)";
+            std::cout << who->who() << " hid)"<<std::endl;
             return false;
         } else {
             who->setEat(true);
             who->setStop();
             hunger += 10;
-            std::cout << who->who() << " was eaten(";
+            std::cout << who->who() << " was eaten("<<std::endl;
             return true;
         }
     }
+
+    return false;
 }
 
 bool clown::propagate() {
@@ -153,14 +157,16 @@ std::pair<int, int> clown::go(const std::vector<std::vector<std::vector<struct l
         }
 
         if(stop || food){
-            points.first = -1;
-            points.second = -1;
+            point.first = -1;
+            point.second = -1;
         }else {
             point = see(field);
             hunger -= 5;
             if (step % 2 == 0) {
                 age++;
             }
+            points.first = point.first;
+            points.second = point.second;
         }
         return point;
     }
@@ -374,6 +380,7 @@ void clown::setPropogate() {
     this->propogate = true;
 }
 
-living *clown::getEntity() {
-    return this;
+std::pair<int, int> clown::getPoint() {
+    return points;
 }
+

@@ -60,14 +60,16 @@ std::pair<int,int> shark::go(const std::vector<std::vector<std::vector<class liv
         return points;
     }else{
         if(stop){
-            points.first = -1;
-            points.second = -1;
+            point.first = -1;
+            point.second = -1;
         }else {
             point = see(field);
             hunger -= 5;
             if (step % 2 == 0) {
                 age++;
             }
+            points.first = point.first;
+            points.second = point.second;
         }
         return point;
     }
@@ -297,8 +299,8 @@ bool shark::getEat() {
     return false;
 }
 
-void shark::setEat(bool eat) {
-    this->food = eat;
+void shark::setEat(bool) {
+
 }
 
 void shark::setStop() {
@@ -313,6 +315,6 @@ void shark::setPropogate() {
     this->propogate = true;
 }
 
-living *shark::getEntity() {
-    return this;
+std::pair<int, int> shark::getPoint() {
+    return points;
 }

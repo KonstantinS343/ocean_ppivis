@@ -4,7 +4,7 @@
 #include "living.h"
 
 corals::corals(const int temp[]) {
-    this->size = temp[2];
+    this->amount = temp[2];
     this->name = " ";
 
 }
@@ -24,7 +24,7 @@ corals::~corals() {
     delete this;
 }
 
-std::string corals::getInfo() {return "\tHP: "+std::to_string(this->size);}
+std::string corals::getInfo() {return "\tHP: "+std::to_string(this->amount);}
 
 
 state corals::getType() {
@@ -32,7 +32,7 @@ state corals::getType() {
 }
 
 bool corals::eat(living* ,const std::vector<std::vector<std::vector<class living*>>>&) {
-
+    return false;
 }
 
 bool corals::hide(const std::vector<std::vector<std::vector<class living*>>>&) {
@@ -51,7 +51,7 @@ std::pair<int, int> corals::see(const std::vector<std::vector<std::vector<struct
 }
 
 int corals::getSize() {
-    return size;
+    return 0;
 }
 
 bool corals::getEat() {
@@ -59,7 +59,7 @@ bool corals::getEat() {
 }
 
 void corals::setEat(bool) {
-    size -= 20;
+    amount -= 20;
 }
 
 sex corals::getSex() {
@@ -78,7 +78,10 @@ void corals::setStop() {
 
 }
 
-living *corals::getEntity() {
-    return this;
+std::pair<int, int> corals::getPoint() {
+    return std::pair<int, int>();
 }
 
+int corals::getAmount() {
+    return this->amount;
+}

@@ -4,7 +4,7 @@
 #include "living.h"
 
 seaweed::seaweed(const int temp[]) {
-    this->size = temp[2];
+    this->amount = temp[2];
     this->name = " ";
 }
 
@@ -19,7 +19,7 @@ std::pair<int,int> seaweed::go(const std::vector<std::vector<std::vector<class l
 }
 
 void seaweed::setEat(bool eat) {
-    size -= 20;
+    amount -= 20;
 }
 
 bool seaweed::check_die() {
@@ -30,7 +30,7 @@ seaweed::~seaweed() {
     delete this;
 }
 
-std::string seaweed::getInfo() {return "\tHP: "+std::to_string(this->size);}
+std::string seaweed::getInfo() {return "\tHP: "+std::to_string(this->amount);}
 
 state seaweed::getType() {
     return state::seaweed;
@@ -45,7 +45,7 @@ bool seaweed::hide(const std::vector<std::vector<std::vector<class living*>>>&) 
 }
 
 bool seaweed::eat(living*, const std::vector<std::vector<std::vector<class living*>>>&) {
-
+return false;
 }
 
 std::pair<int, int> seaweed::see(const std::vector<std::vector<std::vector<struct living *>>> &) {
@@ -53,7 +53,7 @@ std::pair<int, int> seaweed::see(const std::vector<std::vector<std::vector<struc
 }
 
 int seaweed::getSize() {
-    return size;
+    return 0;
 }
 
 sex seaweed::getSex() {
@@ -76,6 +76,10 @@ void seaweed::setStop() {
 
 }
 
-living *seaweed::getEntity() {
-    return this;
+std::pair<int, int> seaweed::getPoint() {
+    return std::pair<int, int>();
+}
+
+int seaweed::getAmount() {
+    return this->amount;
 }

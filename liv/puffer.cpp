@@ -56,6 +56,8 @@ state puffer::getType() {
 }
 
 bool puffer::hide(const std::vector<std::vector<std::vector<struct living *>>> & field) {
+    can_hide = false;
+
     for (auto &alive: field.at(points.first).at(points.second)) {
         if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
             if (alive->getSize() > 20) {
@@ -124,16 +126,17 @@ bool puffer::hide(const std::vector<std::vector<std::vector<struct living *>>> &
 bool puffer::eat(living * who,const std::vector<std::vector<std::vector<struct living *>>> & field) {
     if(!food) {
         if (who->hide(field)) {
-            std::cout << who->who() << " hid)";
+            std::cout << who->who() << " hid)"<<std::endl;
             return false;
         } else {
             who->setEat(true);
             who->setStop();
             hunger += 10;
-            std::cout << who->who() << " was eaten(";
+            std::cout << who->who() << " was eaten("<<std::endl;
             return true;
         }
     }
+    return false;
 }
 
 bool puffer::propagate() {
@@ -154,14 +157,16 @@ std::pair<int, int> puffer::go(const std::vector<std::vector<std::vector<struct 
         }
 
         if(stop || food){
-            points.first = -1;
-            points.second = -1;
+            point.first = -1;
+            point.second = -1;
         }else {
             point = see(field);
             hunger -= 5;
             if (step % 2 == 0) {
                 age++;
             }
+            points.first = point.first;
+            points.second = point.second;
         }
         return point;
     }
@@ -376,6 +381,7 @@ void puffer::setPropogate() {
     this->propogate = true;
 }
 
-living *puffer::getEntity() {
-    return this;
+std::pair<int, int> puffer::getPoint() {
+    return points;
 }
+

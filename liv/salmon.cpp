@@ -71,6 +71,8 @@ bool salmon::eat(living * who, const std::vector<std::vector<std::vector<struct 
             return true;
         }
     }
+
+    return false;
 }
 
 std::pair<int, int> salmon::go(const std::vector<std::vector<std::vector<struct living *>>> & field) {
@@ -82,14 +84,16 @@ std::pair<int, int> salmon::go(const std::vector<std::vector<std::vector<struct 
         return points;
     }else{
         if(stop || food){
-            points.first = -1;
-            points.second = -1;
+            point.first = -1;
+            point.second = -1;
         }else {
             point = see(field);
             hunger -= 5;
             if (step % 2 == 0) {
                 age++;
             }
+            points.first = point.first;
+            points.second = point.second;
         }
         return point;
     }
@@ -101,6 +105,7 @@ bool salmon::propagate() {
 
 std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct living *>>> & field) {
     std::pair<int,int> point;
+    srand(time(NULL));
 
     for (auto &alive: field.at(points.first).at(points.second)) {
         if (alive->getType() == state::salmon){
@@ -306,7 +311,8 @@ void salmon::setPropogate() {
     this->propogate = true;
 }
 
-living *salmon::getEntity() {
-    return this;
+std::pair<int, int> salmon::getPoint() {
+    return points;
 }
+
 
