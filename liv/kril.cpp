@@ -52,6 +52,7 @@ std::pair<int, int> kril::go(const std::vector<std::vector<std::vector<struct li
     point = see(field);
     points.first = point.first;
     points.second = point.second;
+    check_step = true;
 
     if(stop){
         point.first = -10;
@@ -72,11 +73,12 @@ std::pair<int, int> kril::see(const std::vector<std::vector<std::vector<struct l
         if(rands == 0) {
             if (points.first > 0) {
                 for(auto & alive : field.at(points.first-1).at(points.second)){
+                    if(field.at(points.first - 1).at(points.second).size() > 3){
+                        break;
+                    }
                     if(alive->getType() == state::kril && step % 2 == 0){
                         if(alive->getSize() < 100) {
                             alive->propagate();
-                            stop = true;
-                            return point;
                         }
                     }
 
@@ -96,11 +98,12 @@ std::pair<int, int> kril::see(const std::vector<std::vector<std::vector<struct l
                 if (rands == 0) {
                     if (points.first > 0) {
                         for(auto & alive : field.at(points.first-1).at(points.second-1)){
+                            if(field.at(points.first - 1).at(points.second - 1).size() > 3){
+                                break;
+                            }
                             if(alive->getType() == state::kril && step % 2 == 0){
                                 if(alive->getSize() < 100) {
                                     alive->propagate();
-                                    stop = true;
-                                    return point;
                                 }
                             }
 
@@ -117,11 +120,12 @@ std::pair<int, int> kril::see(const std::vector<std::vector<std::vector<struct l
                 if (rands == 1) {
                     if (points.first < field.size() - 1) {
                         for(auto & alive : field.at(points.first+1).at(points.second-1)){
+                            if(field.at(points.first + 1).at(points.second - 1).size() > 3){
+                                break;
+                            }
                             if(alive->getType() == state::kril && step % 2 == 0){
                                 if(alive->getSize() < 100) {
                                     alive->propagate();
-                                    stop = true;
-                                    return point;
                                 }
                             }
 
@@ -137,11 +141,12 @@ std::pair<int, int> kril::see(const std::vector<std::vector<std::vector<struct l
                 if (rands == 3) {
                     if (points.second > 0) {
                         for(auto & alive : field.at(points.first).at(points.second-1)){
+                            if(field.at(points.first).at(points.second-1).size() > 3){
+                                break;
+                            }
                             if(alive->getType() == state::kril && step % 2 == 0){
                                 if(alive->getSize() < 100) {
                                     alive->propagate();
-                                    stop = true;
-                                    return point;
                                 }
                             }
 
@@ -160,11 +165,12 @@ std::pair<int, int> kril::see(const std::vector<std::vector<std::vector<struct l
         if(rands == 2) {
             if (points.first < field.size() - 1) {
                 for(auto & alive : field.at(points.first+1).at(points.second)){
+                    if(field.at(points.first + 1).at(points.second).size() > 3){
+                        break;
+                    }
                     if(alive->getType() == state::kril && step % 2 == 0){
                         if(alive->getSize() < 100) {
                             alive->propagate();
-                            stop = true;
-                            return point;
                         }
                     }
 
@@ -184,11 +190,12 @@ std::pair<int, int> kril::see(const std::vector<std::vector<std::vector<struct l
                 if (rands == 0) {
                     if (points.first > 0) {
                         for(auto & alive : field.at(points.first-1).at(points.second+1)){
+                            if(field.at(points.first - 1).at(points.second+1).size() > 3){
+                                break;
+                            }
                             if(alive->getType() == state::kril && step % 2 == 0){
                                 if(alive->getSize() < 100) {
                                     alive->propagate();
-                                    stop = true;
-                                    return point;
                                 }
                             }
 
@@ -204,11 +211,12 @@ std::pair<int, int> kril::see(const std::vector<std::vector<std::vector<struct l
 
                 if (rands == 1) {
                     for(auto & alive : field.at(points.first+1).at(points.second+1)){
+                        if(field.at(points.first + 1).at(points.second+1).size() > 3){
+                            break;
+                        }
                         if(alive->getType() == state::kril && step % 2 == 0){
                             if(alive->getSize() < 100) {
                                 alive->propagate();
-                                stop = true;
-                                return point;
                             }
                         }
 
@@ -224,11 +232,12 @@ std::pair<int, int> kril::see(const std::vector<std::vector<std::vector<struct l
                 }
                 if (rands == 3) {
                     for(auto & alive : field.at(points.first).at(points.second + 1)){
+                        if(field.at(points.first ).at(points.second+1).size() > 3){
+                            break;
+                        }
                         if(alive->getType() == state::kril && step % 2 == 0){
                             if(alive->getSize() < 100) {
                                 alive->propagate();
-                                stop = true;
-                                return point;
                             }
                         }
 
@@ -255,14 +264,6 @@ sex kril::getSex() {
     return female;
 }
 
-bool kril::getEat() {
-    return false;
-}
-
-void kril::setEat(bool) {
-
-}
-
 void kril::setStop() {
 
 }
@@ -278,4 +279,28 @@ void kril::setPropogate() {
 std::pair<int, int> kril::getPoint() {
     return points;
 }
+
+int kril::getAmouont() {
+    return 0;
+}
+
+bool kril::getCheckStep() {
+    return check_step;
+}
+
+void kril::setCheckStep() {
+    this->check_step = false;
+}
+
+void kril::victim(living*) {
+}
+
+living* kril::die_from_other() {
+    return nullptr;
+}
+
+bool kril::getPropogate_state() {
+    return false;
+}
+
 

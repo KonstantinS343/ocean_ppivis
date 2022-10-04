@@ -13,8 +13,6 @@ class ocean_system : public ocean {
 public:
     void run();
 
-    void system_support();
-
     void show_ocean(); // вывод поля на экран
 
     void cell_state(int,int); // вывод состояния клетки

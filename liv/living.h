@@ -4,7 +4,7 @@
 
 #ifndef OCEAN_LIVING_H
 #define OCEAN_LIVING_H
-
+// удалит seteat geteat дописать удаление и жертву
 #include "../oceanfield/ocean.h"
 #include <iostream>
 
@@ -48,10 +48,6 @@ public:
 
     virtual bool hide(const std::vector<std::vector<std::vector<class living*>>>&) = 0;
 
-    virtual bool getEat() = 0;
-
-    virtual void setEat(bool) = 0;
-
     virtual void setStop() = 0;
 
     virtual std::string getName() = 0;
@@ -62,6 +58,15 @@ public:
 
     virtual int getAmouont() = 0;
 
+    virtual bool getCheckStep() = 0;
+
+    virtual void setCheckStep() = 0;
+
+    virtual living* die_from_other() = 0;
+
+    virtual void victim(living*) = 0;
+
+    virtual bool getPropogate_state() = 0;
 };
 
 
@@ -91,10 +96,6 @@ public:
 
     sex getSex() override;
 
-    bool getEat() override;
-
-    void setEat(bool) override;
-
     void setStop() override;
 
     std::string getName() override;
@@ -102,6 +103,18 @@ public:
     void setPropogate() override;
 
     std::pair<int,int> getPoint() override;
+
+    int getAmouont() override;
+
+    bool getCheckStep() override;
+
+    void setCheckStep() override;
+
+    living* die_from_other() override;
+
+    void victim(living*) override;
+
+    bool getPropogate_state() override;
 
     ~shark();
 private:
@@ -126,6 +139,12 @@ private:
     bool propogate = false;
 
     bool stop = false;
+
+    bool check_step = false;
+
+    bool allow_propogate = true;
+
+    living* alives = nullptr;
 
 };
 
@@ -155,10 +174,6 @@ public:
 
     sex getSex() override;
 
-    bool getEat() override;
-
-    void setEat(bool) override;
-
     void setStop() override;
 
     std::string getName() override;
@@ -166,6 +181,18 @@ public:
     void setPropogate() override;
 
     std::pair<int,int> getPoint() override;
+
+    int getAmouont() override;
+
+    bool getCheckStep() override;
+
+    void setCheckStep() override;
+
+    living* die_from_other() override;
+
+    void victim(living*) override;
+
+    bool getPropogate_state() override;
 
     ~salmon();
 private:
@@ -187,11 +214,15 @@ private:
 
     int step = 0;
 
-    bool food = false;
-
     bool propogate = false;
 
     bool stop = false;
+
+    bool check_step = false;
+
+    bool allow_propogate = true;
+
+    living* alives = nullptr;
 
 };
 
@@ -221,10 +252,6 @@ public:
 
     sex getSex() override;
 
-    bool getEat() override;
-
-    void setEat(bool) override;
-
     void setStop() override;
 
     std::string getName() override;
@@ -232,6 +259,18 @@ public:
     std::pair<int,int> getPoint() override;
 
     void setPropogate() override;
+
+    int getAmouont() override;
+
+    bool getCheckStep() override;
+
+    void setCheckStep() override;
+
+    living* die_from_other() override;
+
+    void victim(living*) override;
+
+    bool getPropogate_state() override;
 
     ~puffer();
 private:
@@ -253,8 +292,6 @@ private:
 
     int step = 0;
 
-    bool food = false;
-
     bool propogate = false;
 
     bool stop = false;
@@ -262,6 +299,12 @@ private:
     bool can_hide = false;
 
     std::pair <int,int> point_hide;
+
+    bool check_step = false;
+
+    bool allow_propogate = true;
+
+    living* alives = nullptr;
 };
 
 class clown : public living{//рыба-клоун
@@ -290,10 +333,6 @@ public:
 
     sex getSex() override;
 
-    bool getEat() override;
-
-    void setEat(bool) override;
-
     void setStop() override;
 
     std::string getName() override;
@@ -301,6 +340,18 @@ public:
     void setPropogate() override;
 
     std::pair<int,int> getPoint() override;
+
+    int getAmouont() override;
+
+    bool getCheckStep() override;
+
+    void setCheckStep() override;
+
+    living* die_from_other() override;
+
+    void victim(living*) override;
+
+    bool getPropogate_state() override;
 
     ~clown();
 private:
@@ -322,8 +373,6 @@ private:
 
     int step = 0;
 
-    bool food = false;
-
     bool propogate = false;
 
     bool stop = false;
@@ -331,6 +380,12 @@ private:
     bool can_hide = false;
 
     std::pair <int,int> point_hide;
+
+    bool check_step = false;
+
+    bool allow_propogate = true;
+
+    living* alives = nullptr;
 };
 
 class anchovys : public living{//анчоус
@@ -359,10 +414,6 @@ public:
 
     sex getSex() override;
 
-    bool getEat() override;
-
-    void setEat(bool) override;
-
     void setStop() override;
 
     std::string getName() override;
@@ -370,6 +421,18 @@ public:
     void setPropogate() override;
 
     std::pair<int,int> getPoint() override;
+
+    int getAmouont() override;
+
+    bool getCheckStep() override;
+
+    void setCheckStep() override;
+
+    living* die_from_other() override;
+
+    void victim(living*) override;
+
+    bool getPropogate_state() override;
 
     ~anchovys();
 private:
@@ -391,8 +454,6 @@ private:
 
     int step = 0;
 
-    bool food = false;
-
     bool propogate = false;
 
     bool stop = false;
@@ -400,6 +461,12 @@ private:
     bool can_hide = false;
 
     std::pair <int,int> point_hide;
+
+    bool check_step = false;
+
+    bool allow_propogate = true;
+
+    living* alives = nullptr;
 
 };
 
@@ -429,10 +496,6 @@ public:
 
     sex getSex() override;
 
-    bool getEat() override;
-
-    void setEat(bool) override;
-
     void setStop() override;
 
     std::string getName() override;
@@ -440,6 +503,18 @@ public:
     void setPropogate() override;
 
     std::pair<int,int> getPoint() override;
+
+    int getAmouont() override;
+
+    bool getCheckStep() override;
+
+    void setCheckStep() override;
+
+    living* die_from_other() override;
+
+    void victim(living*) override;
+
+    bool getPropogate_state() override;
 
     ~kril();
 private:
@@ -455,6 +530,8 @@ private:
     std::pair<int,int> points;
 
     bool stop = false;
+
+    bool check_step = false;
 };
 
 class corals : public living{
@@ -483,10 +560,6 @@ public:
 
     sex getSex() override;
 
-    bool getEat() override;
-
-    void setEat(bool) override;
-
     void setPropogate() override;
 
     std::string getName() override;
@@ -495,7 +568,17 @@ public:
 
     std::pair<int,int> getPoint() override;
 
-    int getAmount();
+    int getAmouont() override;
+
+    bool getCheckStep() override;
+
+    void setCheckStep() override;
+
+    living* die_from_other() override;
+
+    void victim(living*) override;
+
+    bool getPropogate_state() override;
 
     ~corals();
 private:
@@ -534,10 +617,6 @@ public:
 
     sex getSex() override;
 
-    bool getEat() override;
-
-    void setEat(bool) override;
-
     void setPropogate() override;
 
     std::string getName() override;
@@ -546,7 +625,17 @@ public:
 
     std::pair<int,int> getPoint() override;
 
-    int getAmount();
+    int getAmouont() override;
+
+    bool getCheckStep() override;
+
+    void setCheckStep() override;
+
+    living* die_from_other() override;
+
+    void victim(living*) override;
+
+    bool getPropogate_state() override;
 
     ~seaweed();
 private:

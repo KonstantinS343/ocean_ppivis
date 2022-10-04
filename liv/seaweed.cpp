@@ -18,10 +18,6 @@ std::pair<int,int> seaweed::go(const std::vector<std::vector<std::vector<class l
     return points;
 }
 
-void seaweed::setEat(bool eat) {
-    amount -= 20;
-}
-
 bool seaweed::check_die() {
     return true;
 }
@@ -41,6 +37,7 @@ bool seaweed::propagate() {
 }
 
 bool seaweed::hide(const std::vector<std::vector<std::vector<class living*>>>&) {
+    amount -= 20;
     return false;
 }
 
@@ -60,10 +57,6 @@ sex seaweed::getSex() {
     return female;
 }
 
-bool seaweed::getEat() {
-    return false;
-}
-
 void seaweed::setPropogate() {
 
 }
@@ -80,6 +73,25 @@ std::pair<int, int> seaweed::getPoint() {
     return std::pair<int, int>();
 }
 
-int seaweed::getAmount() {
+int seaweed::getAmouont() {
     return this->amount;
 }
+
+void seaweed::setCheckStep() {
+
+}
+
+bool seaweed::getCheckStep() {
+    return false;
+}
+void seaweed::victim(living *alive) {
+}
+
+living* seaweed::die_from_other() {
+    return nullptr;
+}
+
+bool seaweed::getPropogate_state() {
+    return false;
+}
+

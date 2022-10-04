@@ -54,15 +54,13 @@ state anchovys::getType() {
 }
 
 bool anchovys::eat(living * who, const std::vector<std::vector<std::vector<struct living *>>> & field) {
-    if(!food) {
+    if(!who->getCheckStep()) {
         if (who->hide(field)) {
-            std::cout << who->who() << " hid)"<<std::endl;
+            std::cout << who->who() << " hid)" << std::endl;
             return false;
         } else {
-            who->setEat(true);
-            who->setStop();
             hunger += 10;
-            std::cout << who->who() << " was eaten(\n"<<std::endl;
+            std::cout << who->who() << " was eaten(" << std::endl;
             return true;
         }
     }
@@ -72,6 +70,11 @@ bool anchovys::eat(living * who, const std::vector<std::vector<std::vector<struc
 std::pair<int, int> anchovys::go(const std::vector<std::vector<std::vector<struct living *>>> & field) {
     std::pair<int,int> point;
     step++;
+    check_step = true;
+
+    if(step % 3 == 0){
+        allow_propogate = true;
+    }
 
     if(check_die()){
         std::cout<<who()<<" dies and can't move anywhere"<<std::endl;
@@ -82,9 +85,9 @@ std::pair<int, int> anchovys::go(const std::vector<std::vector<std::vector<struc
             return point_hide;
         }
 
-        if(stop || food){
-            point.first = -1;
-            point.second = -1;
+        if(stop){
+            point.first = points.first;
+            point.second = points.second;
         }else {
             point = see(field);
             hunger -= 5;
@@ -99,7 +102,7 @@ std::pair<int, int> anchovys::go(const std::vector<std::vector<std::vector<struc
 }
 
 bool anchovys::propagate() {
-    return this->propogate;
+    return this->allow_propogate;
 }
 
 sex anchovys::getSex() {
@@ -109,13 +112,17 @@ sex anchovys::getSex() {
 int anchovys::getSize() {
     return this->size;
 }
+void anchovys::victim(living *alive) {
+    this->alives = alive;
+}
 
-bool anchovys::getEat() {
-    return this->food;
+living* anchovys::die_from_other() {
+    return nullptr;
 }
 
 void anchovys::setStop() {
     this->stop = true;
+    this->propogate = true;
 }
 
 std::string anchovys::getName() {
@@ -123,7 +130,9 @@ std::string anchovys::getName() {
 }
 
 void anchovys::setPropogate() {
-    this->propogate = true;
+    this->allow_propogate = false;
+    this->propogate = false;
+    this->stop = false;
 }
 
 bool anchovys::hide(const std::vector<std::vector<std::vector<class living*>>>& field) {
@@ -131,9 +140,9 @@ bool anchovys::hide(const std::vector<std::vector<std::vector<class living*>>>& 
 
     for (auto &alive: field.at(points.first).at(points.second)) {
         if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-            if (alive->getSize() > 20) {
+            if (alive->getAmouont() > 20) {
                 point_hide.first = points.first;
-                point_hide.second = points.second - 1;
+                point_hide.second = points.second;
                 can_hide = true;
                 return true;
             }
@@ -142,10 +151,13 @@ bool anchovys::hide(const std::vector<std::vector<std::vector<class living*>>>& 
 
     if (points.first > 0) {
         for (auto &alive: field.at(points.first - 1).at(points.second)) {
+            if(field.at(points.first - 1).at(points.second).size() > 3){
+                break;
+            }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-                if (alive->getSize() > 20) {
-                    point_hide.first = points.first;
-                    point_hide.second = points.second - 1;
+                if (alive->getAmouont() > 20) {
+                    point_hide.first = points.first - 1;
+                    point_hide.second = points.second;
                     can_hide = true;
                     return true;
                 }
@@ -155,8 +167,11 @@ bool anchovys::hide(const std::vector<std::vector<std::vector<class living*>>>& 
 
     if (points.second > 0) {
         for (auto &alive: field.at(points.first).at(points.second - 1)) {
+            if(field.at(points.first).at(points.second-1).size() > 3){
+                break;
+            }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-                if (alive->getSize() > 20) {
+                if (alive->getAmouont() > 20) {
                     point_hide.first = points.first;
                     point_hide.second = points.second - 1;
                     can_hide = true;
@@ -168,10 +183,13 @@ bool anchovys::hide(const std::vector<std::vector<std::vector<class living*>>>& 
 
     if (points.first < field.size() - 1) {
         for (auto &alive: field.at(points.first + 1).at(points.second)) {
+            if(field.at(points.first + 1).at(points.second).size() > 3){
+                break;
+            }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-                if (alive->getSize() > 20) {
-                    point_hide.first = points.first;
-                    point_hide.second = points.second - 1;
+                if (alive->getAmouont() > 20) {
+                    point_hide.first = points.first+1;
+                    point_hide.second = points.second;
                     can_hide = true;
                     return true;
                 }
@@ -181,10 +199,13 @@ bool anchovys::hide(const std::vector<std::vector<std::vector<class living*>>>& 
 
     if (points.second < field.at(0).size()-1) {
         for (auto &alive: field.at(points.first).at(points.second + 1)) {
+            if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                break;
+            }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-                if (alive->getSize() > 20) {
-                    point_hide.first = points.first;
-                    point_hide.second = points.second - 1;
+                if (alive->getAmouont() > 20) {
+                    point_hide.first = points.first+1;
+                    point_hide.second = points.second;
                     can_hide = true;
                 }
             }
@@ -198,26 +219,35 @@ std::pair<int, int> anchovys::see(const std::vector<std::vector<std::vector<stru
     std::pair<int,int> point;
 
     for (auto &alive: field.at(points.first).at(points.second)) {
-        if (alive->getType() == state::clown){
+        if (alive->getType() == state::anchovys && alive != this){
             if(alive->getSex() != living_sex && age > 5){
                 point.first = points.first;
                 point.second = points.second;
-                alive->setStop();
-                alive->setPropogate();
-                return point;
+                if(allow_propogate && alive->propagate()) {
+                    alive->setStop();
+                    allow_propogate = false;
+                    return point;
+
+                }
             }
         }
     }
 
     if (points.first > 0) {
         for (auto &alive: field.at(points.first - 1).at(points.second)) {
-            if (alive->getType() == state::clown){
+            if(field.at(points.first - 1).at(points.second).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::anchovys && alive != this){
                 if(alive->getSex() != living_sex && age > 5){
                     point.first = points.first - 1;
                     point.second = points.second;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
 
@@ -226,13 +256,19 @@ std::pair<int, int> anchovys::see(const std::vector<std::vector<std::vector<stru
 
     if (points.second > 0) {
         for (auto &alive: field.at(points.first).at(points.second - 1)) {
-            if (alive->getType() == state::clown){
+            if(field.at(points.first).at(points.second-1).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::anchovys && alive != this){
                 if(alive->getSex() != living_sex && age > 5){
                     point.first = points.first ;
                     point.second = points.second - 1;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -240,13 +276,19 @@ std::pair<int, int> anchovys::see(const std::vector<std::vector<std::vector<stru
 
     if (points.first < field.size() - 1) {
         for (auto &alive: field.at(points.first + 1).at(points.second)) {
-            if (alive->getType() == state::clown){
+            if(field.at(points.first + 1).at(points.second).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::anchovys && alive != this){
                 if(alive->getSex() != living_sex && age > 5){
                     point.first = points.first + 1;
                     point.second = points.second;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -254,13 +296,19 @@ std::pair<int, int> anchovys::see(const std::vector<std::vector<std::vector<stru
 
     if (points.second < field.at(0).size()-1) {
         for (auto &alive: field.at(points.first).at(points.second + 1)) {
-            if (alive->getType() == state::clown){
+            if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::anchovys && alive != this){
                 if(alive->getSex() != living_sex && age > 5){
                     point.first = points.first;
                     point.second = points.second + 1;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -281,6 +329,9 @@ std::pair<int, int> anchovys::see(const std::vector<std::vector<std::vector<stru
 
         if (points.first > 0) {
             for (auto &alive: field.at(points.first - 1).at(points.second)) {
+                if(field.at(points.first - 1).at(points.second).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
                         point.first = points.first - 1;
@@ -295,6 +346,9 @@ std::pair<int, int> anchovys::see(const std::vector<std::vector<std::vector<stru
 
         if (points.second > 0) {
             for (auto &alive: field.at(points.first).at(points.second - 1)) {
+                if(field.at(points.first).at(points.second-1).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
                         point.first = points.first;
@@ -310,6 +364,9 @@ std::pair<int, int> anchovys::see(const std::vector<std::vector<std::vector<stru
 
         if (points.first < field.size() - 1) {
             for (auto &alive: field.at(points.first + 1).at(points.second)) {
+                if(field.at(points.first + 1).at(points.second).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
                         point.first = points.first + 1;
@@ -324,6 +381,9 @@ std::pair<int, int> anchovys::see(const std::vector<std::vector<std::vector<stru
 
         if (points.second < field.at(0).size() - 1) {
             for (auto &alive: field.at(points.first).at(points.second + 1)) {
+                if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
                         point.first = points.first;
@@ -342,6 +402,9 @@ std::pair<int, int> anchovys::see(const std::vector<std::vector<std::vector<stru
 
         if(rands == 0) {
             if (points.first > 0) {
+                if(field.at(points.first - 1).at(points.second).size() > 3){
+                    continue;
+                }
                 point.first = points.first - 1;
                 point.second = points.second;
                 return point;
@@ -350,6 +413,9 @@ std::pair<int, int> anchovys::see(const std::vector<std::vector<std::vector<stru
 
         if(rands == 1) {
             if (points.second > 0) {
+                if(field.at(points.first).at(points.second-1).size() > 3){
+                    continue;
+                }
                 point.first = points.first ;
                 point.second = points.second - 1;
                 return point;
@@ -358,6 +424,9 @@ std::pair<int, int> anchovys::see(const std::vector<std::vector<std::vector<stru
 
         if(rands == 2) {
             if (points.first < field.size() - 1) {
+                if(field.at(points.first + 1).at(points.second).size() > 3){
+                    continue;
+                }
                 point.first = points.first + 1;
                 point.second = points.second;
                 return point;
@@ -366,6 +435,9 @@ std::pair<int, int> anchovys::see(const std::vector<std::vector<std::vector<stru
 
         if(rands == 3) {
             if (points.second < field.at(0).size() - 1) {
+                if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                    continue;
+                }
                 point.first = points.first;
                 point.second = points.second + 1;
                 return point;
@@ -374,10 +446,22 @@ std::pair<int, int> anchovys::see(const std::vector<std::vector<std::vector<stru
     }
 }
 
-void anchovys::setEat(bool eat) {
-    this->food = eat;
-}
-
 std::pair<int, int> anchovys::getPoint() {
     return points;
+}
+
+int anchovys::getAmouont() {
+    return 0;
+}
+
+bool anchovys::getCheckStep() {
+    return check_step;
+}
+
+void anchovys::setCheckStep() {
+    this->check_step = false;
+}
+
+bool anchovys::getPropogate_state() {
+    return this->propogate;
 }

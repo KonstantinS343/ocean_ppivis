@@ -57,35 +57,36 @@ bool salmon::hide(const std::vector<std::vector<std::vector<struct living *>>> &
 }
 
 bool salmon::eat(living * who, const std::vector<std::vector<std::vector<struct living *>>> & field) {
-    if(!food) {
+    if(!who->getCheckStep()) {
         if (who->hide(field)) {
-            std::cout << who->who() << " hid)";
+            std::cout << who->who() << " hid)" << std::endl;
             return false;
         } else {
-            who->setEat(true);
-            who->setStop();
             hunger += 10;
-            std::cout << who->who() << " was eaten(";
-            delete who;
-            who = nullptr;
+            victim(who);
+            std::cout << who->who() << " was eaten(" << std::endl;
             return true;
         }
     }
-
     return false;
 }
 
 std::pair<int, int> salmon::go(const std::vector<std::vector<std::vector<struct living *>>> & field) {
     std::pair<int,int> point;
     step++;
+    check_step = true;
+
+    if(step % 3 == 0){
+        allow_propogate = true;
+    }
 
     if(check_die()){
         std::cout<<who()<<" dies and can't move anywhere"<<std::endl;
         return points;
     }else{
-        if(stop || food){
-            point.first = -1;
-            point.second = -1;
+        if(stop){
+            point.first = points.first;
+            point.second = points.second;
         }else {
             point = see(field);
             hunger -= 5;
@@ -100,7 +101,7 @@ std::pair<int, int> salmon::go(const std::vector<std::vector<std::vector<struct 
 }
 
 bool salmon::propagate() {
-    return this->propogate;
+    return this->allow_propogate;
 }
 
 std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct living *>>> & field) {
@@ -108,26 +109,35 @@ std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct
     srand(time(NULL));
 
     for (auto &alive: field.at(points.first).at(points.second)) {
-        if (alive->getType() == state::salmon){
+        if (alive->getType() == state::salmon && alive != this){
             if(alive->getSex() != living_sex && age >= 3){
                 point.first = points.first;
                 point.second = points.second;
-                alive->setStop();
-                alive->setPropogate();
-                return point;
+                if(allow_propogate && alive->propagate()) {
+                    alive->setStop();
+                    allow_propogate = false;
+                    return point;
+
+                }
             }
         }
     }
 
     if (points.first > 0) {
         for (auto &alive: field.at(points.first - 1).at(points.second)) {
-            if (alive->getType() == state::salmon){
+            if(field.at(points.first - 1).at(points.second).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::salmon && alive != this){
                 if(alive->getSex() != living_sex && age >= 3){
                     point.first = points.first - 1;
                     point.second = points.second;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate())  {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -135,13 +145,19 @@ std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct
 
     if (points.second > 0) {
         for (auto &alive: field.at(points.first).at(points.second - 1)) {
-            if (alive->getType() == state::salmon){
+            if(field.at(points.first).at(points.second-1).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::salmon && alive != this){
                 if(alive->getSex() != living_sex && age >= 3){
                     point.first = points.first ;
                     point.second = points.second - 1;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -149,13 +165,19 @@ std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct
 
     if (points.first < field.size() - 1) {
         for (auto &alive: field.at(points.first + 1).at(points.second)) {
-            if (alive->getType() == state::salmon){
+            if(field.at(points.first + 1).at(points.second).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::salmon && alive != this){
                 if(alive->getSex() != living_sex && age >= 3){
                     point.first = points.first + 1;
                     point.second = points.second;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -163,13 +185,19 @@ std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct
 
     if (points.second < field.at(0).size()-1) {
         for (auto &alive: field.at(points.first).at(points.second + 1)) {
-            if (alive->getType() == state::salmon){
+            if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::salmon && alive != this){
                 if(alive->getSex() != living_sex && age >= 3){
                     point.first = points.first;
                     point.second = points.second + 1;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -190,6 +218,9 @@ std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct
 
         if (points.first > 0) {
             for (auto &alive: field.at(points.first - 1).at(points.second)) {
+                if(field.at(points.first - 1).at(points.second).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]){
                     if(this->size >= alive->getSize()){
                         point.first = points.first - 1;
@@ -204,6 +235,9 @@ std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct
 
         if (points.second > 0) {
             for (auto &alive: field.at(points.first).at(points.second - 1)) {
+                if(field.at(points.first).at(points.second-1).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]){
                     if(this->size >= alive->getSize()){
                         point.first = points.first ;
@@ -218,6 +252,9 @@ std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct
 
         if (points.first < field.size() - 1) {
             for (auto &alive: field.at(points.first + 1).at(points.second)) {
+                if(field.at(points.first + 1).at(points.second).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]){
                     if(this->size >= alive->getSize()){
                         point.first = points.first + 1;
@@ -232,6 +269,9 @@ std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct
 
         if (points.second < field.at(0).size()-1) {
             for (auto &alive: field.at(points.first).at(points.second + 1)) {
+                if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]){
                     if(this->size >= alive->getSize()){
                         point.first = points.first;
@@ -251,6 +291,9 @@ std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct
 
         if(rands == 0) {
             if (points.first > 0) {
+                if(field.at(points.first - 1).at(points.second).size() > 3){
+                    continue;
+                }
                 point.first = points.first - 1;
                 point.second = points.second;
                 return point;
@@ -259,6 +302,9 @@ std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct
 
         if(rands == 1) {
             if (points.second > 0) {
+                if(field.at(points.first).at(points.second-1).size() > 3){
+                    continue;
+                }
                 point.first = points.first ;
                 point.second = points.second - 1;
                 return point;
@@ -267,6 +313,9 @@ std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct
 
         if(rands == 2) {
             if (points.first < field.size() - 1) {
+                if(field.at(points.first + 1).at(points.second).size() > 3){
+                    continue;
+                }
                 point.first = points.first + 1;
                 point.second = points.second;
                 return point;
@@ -275,6 +324,9 @@ std::pair<int, int> salmon::see(const std::vector<std::vector<std::vector<struct
 
         if(rands == 3) {
             if (points.second < field.at(0).size() - 1) {
+                if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                    continue;
+                }
                 point.first = points.first;
                 point.second = points.second + 1;
                 return point;
@@ -291,15 +343,8 @@ sex salmon::getSex() {
     return this->living_sex;
 }
 
-bool salmon::getEat() {
-    return this->food;
-}
-
-void salmon::setEat(bool eat) {
-    this->food = eat;
-}
-
 void salmon::setStop() {
+    this->propogate = true;
     this->stop = true;
 }
 
@@ -308,11 +353,37 @@ std::string salmon::getName() {
 }
 
 void salmon::setPropogate() {
-    this->propogate = true;
+    this->allow_propogate = false;
+    this->propogate = false;
+    this->stop = false;
 }
 
 std::pair<int, int> salmon::getPoint() {
     return points;
+}
+
+int salmon::getAmouont() {
+    return 0;
+}
+
+bool salmon::getCheckStep() {
+    return check_step;
+}
+
+void salmon::setCheckStep() {
+    this->check_step = false;
+}
+
+void salmon::victim(living *alives) {
+    this->alives = alives;
+}
+
+living* salmon::die_from_other() {
+    return this->alives;
+}
+
+bool salmon::getPropogate_state() {
+    return this->propogate;
 }
 
 

@@ -26,26 +26,25 @@ std::string shark::who() {return "акула " + name;}
 
 bool shark::eat(living* who, const std::vector<std::vector<std::vector<class living*>>>& file) {
 
-    if(who->getType() == list_of_priority[0]){
-        hunger+=20;
-        std::cout<<who->who()<<" was eaten(";
-        who->setStop();
-        delete who;
-        who = nullptr;
-        return true;
-    }else{
-        if(who->hide(file)){
-            std::cout<<who->who()<<" hid)";
-            return false;
-        }else{
-            who->setEat(true);
-            who->setStop();
-            hunger+=10;
-            std::cout<<who->who()<<" was eaten(";
-            delete who;
-            who = nullptr;
+    if(!who->getCheckStep()) {
+        if (who->getType() == list_of_priority[0]) {
+            victim(who);
+            hunger += 20;
+            std::cout << who->who() << " was eaten("<<std::endl;
             return true;
+        } else {
+            if (who->hide(file)) {
+                std::cout << who->who() << " hid)"<<std::endl;
+                return false;
+            } else {
+                hunger += 10;
+                victim(who);
+                std::cout << who->who() << " was eaten("<<std::endl;
+                return true;
+            }
         }
+    }else{
+        return false;
     }
 
 }
@@ -54,14 +53,19 @@ std::pair<int,int> shark::go(const std::vector<std::vector<std::vector<class liv
 
     std::pair<int,int> point;
     step++;
+    check_step = true;
+
+    if(step % 3 == 0){
+        allow_propogate = true;
+    }
 
     if(check_die()){
         std::cout<<who()<<" dies and can't move anywhere"<<std::endl;
         return points;
     }else{
         if(stop){
-            point.first = -1;
-            point.second = -1;
+            point.first = points.first;
+            point.second = points.second;
         }else {
             point = see(field);
             hunger -= 5;
@@ -77,7 +81,7 @@ std::pair<int,int> shark::go(const std::vector<std::vector<std::vector<class liv
 }
 
 bool shark::propagate() {
-    return this->propogate;
+    return this->allow_propogate;
 }
 
 bool shark::check_die() {
@@ -118,26 +122,35 @@ std::pair<int,int> shark::see(const std::vector<std::vector<std::vector<class li
     std::pair<int,int> point;
 
     for (auto &alive: field.at(points.first).at(points.second)) {
-        if (alive->getType() == state::shark){
+        if (alive->getType() == state::shark && alive != this) {
             if(alive->getSex() != living_sex && age > 10){
                 point.first = points.first;
                 point.second = points.second;
-                alive->setStop();
-                alive->setPropogate();
-                return point;
+                if(allow_propogate && alive->propagate()) {
+                    alive->setStop();
+                    allow_propogate = false;
+                    return point;
+
+                }
             }
         }
     }
 
     if (points.first > 0) {
         for (auto &alive: field.at(points.first - 1).at(points.second)) {
-            if (alive->getType() == state::shark){
+            if(field.at(points.first - 1).at(points.second).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::shark && alive != this){
                 if(alive->getSex() != living_sex && age > 10){
                     point.first = points.first - 1;
                     point.second = points.second;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -145,13 +158,19 @@ std::pair<int,int> shark::see(const std::vector<std::vector<std::vector<class li
 
     if (points.second > 0) {
         for (auto &alive: field.at(points.first).at(points.second - 1)) {
-            if (alive->getType() == state::shark){
+            if(field.at(points.first).at(points.second-1).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::shark && alive != this){
                 if(alive->getSex() != living_sex && age > 10){
                     point.first = points.first ;
                     point.second = points.second - 1;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -159,13 +178,19 @@ std::pair<int,int> shark::see(const std::vector<std::vector<std::vector<class li
 
     if (points.first < field.size() - 1) {
         for (auto &alive: field.at(points.first + 1).at(points.second)) {
-            if (alive->getType() == state::shark){
+            if(field.at(points.first + 1).at(points.second).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::shark && alive != this){
                 if(alive->getSex() != living_sex && age > 10){
                     point.first = points.first + 1;
                     point.second = points.second;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -173,13 +198,18 @@ std::pair<int,int> shark::see(const std::vector<std::vector<std::vector<class li
 
     if (points.second < field.at(0).size()-1) {
         for (auto &alive: field.at(points.first).at(points.second + 1)) {
-            if (alive->getType() == state::shark){
+            if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::shark && alive != this){
                 if(alive->getSex() != living_sex && age > 10){
                     point.first = points.first;
                     point.second = points.second + 1;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+                    }
                 }
             }
         }
@@ -199,6 +229,9 @@ std::pair<int,int> shark::see(const std::vector<std::vector<std::vector<class li
 
         if (points.first > 0) {
             for (auto &alive: field.at(points.first - 1).at(points.second)) {
+                if(field.at(points.first - 1).at(points.second).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]){
                     if(this->size >= alive->getSize()){
                         point.first = points.first - 1;
@@ -213,6 +246,9 @@ std::pair<int,int> shark::see(const std::vector<std::vector<std::vector<class li
 
         if (points.second > 0) {
             for (auto &alive: field.at(points.first).at(points.second - 1)) {
+                if(field.at(points.first).at(points.second-1).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]){
                     if(this->size >= alive->getSize()){
                         point.first = points.first ;
@@ -227,6 +263,9 @@ std::pair<int,int> shark::see(const std::vector<std::vector<std::vector<class li
 
         if (points.first < field.size() - 1) {
             for (auto &alive: field.at(points.first + 1).at(points.second)) {
+                if(field.at(points.first + 1).at(points.second).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]){
                     if(this->size >= alive->getSize()){
                         point.first = points.first + 1;
@@ -241,6 +280,9 @@ std::pair<int,int> shark::see(const std::vector<std::vector<std::vector<class li
 
         if (points.second < field.at(0).size()-1) {
             for (auto &alive: field.at(points.first).at(points.second + 1)) {
+                if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]){
                     if(this->size >= alive->getSize()){
                         point.first = points.first;
@@ -259,6 +301,9 @@ std::pair<int,int> shark::see(const std::vector<std::vector<std::vector<class li
 
         if(rands == 0) {
             if (points.first > 0) {
+                if(field.at(points.first - 1).at(points.second).size() > 3){
+                    continue;
+                }
                 point.first = points.first - 1;
                 point.second = points.second;
                 return point;
@@ -267,6 +312,9 @@ std::pair<int,int> shark::see(const std::vector<std::vector<std::vector<class li
 
         if(rands == 1) {
             if (points.second > 0) {
+                if(field.at(points.first).at(points.second-1).size() > 3){
+                    continue;
+                }
                 point.first = points.first ;
                 point.second = points.second - 1;
                 return point;
@@ -275,6 +323,9 @@ std::pair<int,int> shark::see(const std::vector<std::vector<std::vector<class li
 
         if(rands == 2) {
             if (points.first < field.size() - 1) {
+                if(field.at(points.first + 1).at(points.second).size() > 3){
+                    continue;
+                }
                 point.first = points.first + 1;
                 point.second = points.second;
                 return point;
@@ -283,6 +334,9 @@ std::pair<int,int> shark::see(const std::vector<std::vector<std::vector<class li
 
         if(rands == 3) {
             if (points.second < field.at(0).size() - 1) {
+                if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                    continue;
+                }
                 point.first = points.first;
                 point.second = points.second + 1;
                 return point;
@@ -295,15 +349,8 @@ bool shark::hide(const std::vector<std::vector<std::vector<class living*>>>& fil
     return false;
 }
 
-bool shark::getEat() {
-    return false;
-}
-
-void shark::setEat(bool) {
-
-}
-
 void shark::setStop() {
+    this->propogate = true;
     this->stop = true;
 }
 
@@ -312,9 +359,35 @@ std::string shark::getName() {
 }
 
 void shark::setPropogate() {
-    this->propogate = true;
+    this->allow_propogate = false;
+    this->propogate = false;
+    this->stop = false;
 }
 
 std::pair<int, int> shark::getPoint() {
     return points;
+}
+
+int shark::getAmouont() {
+    return 0;
+}
+
+bool shark::getCheckStep() {
+    return check_step;
+}
+
+void shark::setCheckStep() {
+    this->check_step = false;
+}
+
+living *shark::die_from_other() {
+    return this->alives;
+}
+
+void shark::victim(living * alives) {
+    this->alives = alives;
+}
+
+bool shark::getPropogate_state() {
+    return this->propogate;
 }

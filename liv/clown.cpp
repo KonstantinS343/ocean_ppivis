@@ -57,11 +57,11 @@ state clown::getType() {
 bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & field){
     can_hide = false;
 
-    for(auto &alive: field.at(points.first).at(points.second)) {
+    for (auto &alive: field.at(points.first).at(points.second)) {
         if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-            if (alive->getSize() > 20) {
+            if (alive->getAmouont() > 20) {
                 point_hide.first = points.first;
-                point_hide.second = points.second - 1;
+                point_hide.second = points.second;
                 can_hide = true;
                 return true;
             }
@@ -70,10 +70,13 @@ bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & 
 
     if (points.first > 0) {
         for (auto &alive: field.at(points.first - 1).at(points.second)) {
+            if(field.at(points.first - 1).at(points.second).size() > 3){
+                break;
+            }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-                if (alive->getSize() > 20) {
-                    point_hide.first = points.first;
-                    point_hide.second = points.second - 1;
+                if (alive->getAmouont() > 20) {
+                    point_hide.first = points.first - 1;
+                    point_hide.second = points.second;
                     can_hide = true;
                     return true;
                 }
@@ -83,8 +86,11 @@ bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & 
 
     if (points.second > 0) {
         for (auto &alive: field.at(points.first).at(points.second - 1)) {
+            if(field.at(points.first).at(points.second-1).size() > 3){
+                break;
+            }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-                if (alive->getSize() > 20) {
+                if (alive->getAmouont() > 20) {
                     point_hide.first = points.first;
                     point_hide.second = points.second - 1;
                     can_hide = true;
@@ -96,10 +102,13 @@ bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & 
 
     if (points.first < field.size() - 1) {
         for (auto &alive: field.at(points.first + 1).at(points.second)) {
+            if(field.at(points.first + 1).at(points.second).size() > 3){
+                break;
+            }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-                if (alive->getSize() > 20) {
-                    point_hide.first = points.first;
-                    point_hide.second = points.second - 1;
+                if (alive->getAmouont() > 20) {
+                    point_hide.first = points.first+1;
+                    point_hide.second = points.second;
                     can_hide = true;
                     return true;
                 }
@@ -109,10 +118,13 @@ bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & 
 
     if (points.second < field.at(0).size()-1) {
         for (auto &alive: field.at(points.first).at(points.second + 1)) {
+            if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                break;
+            }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-                if (alive->getSize() > 20) {
-                    point_hide.first = points.first;
-                    point_hide.second = points.second - 1;
+                if (alive->getAmouont() > 20) {
+                    point_hide.first = points.first+1;
+                    point_hide.second = points.second;
                     can_hide = true;
                 }
             }
@@ -123,15 +135,13 @@ bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & 
 }
 
 bool clown::eat(living * who,const std::vector<std::vector<std::vector<struct living *>>> & field) {
-    if(!food) {
+    if(!who->getCheckStep()) {
         if (who->hide(field)) {
-            std::cout << who->who() << " hid)"<<std::endl;
+            std::cout << who->who() << " hid)" << std::endl;
             return false;
         } else {
-            who->setEat(true);
-            who->setStop();
             hunger += 10;
-            std::cout << who->who() << " was eaten("<<std::endl;
+            std::cout << who->who() << " was eaten(" << std::endl;
             return true;
         }
     }
@@ -140,12 +150,17 @@ bool clown::eat(living * who,const std::vector<std::vector<std::vector<struct li
 }
 
 bool clown::propagate() {
-    return this->propogate;
+    return this->allow_propogate;
 }
 
 std::pair<int, int> clown::go(const std::vector<std::vector<std::vector<struct living *>>> & field) {
     std::pair<int,int> point;
     step++;
+    check_step = true;
+
+    if(step % 3 == 0){
+        allow_propogate = true;
+    }
 
     if(check_die()){
         std::cout<<who()<<" dies and can't move anywhere"<<std::endl;
@@ -156,9 +171,9 @@ std::pair<int, int> clown::go(const std::vector<std::vector<std::vector<struct l
             return point_hide;
         }
 
-        if(stop || food){
-            point.first = -1;
-            point.second = -1;
+        if(stop){
+            point.first = points.first;
+            point.second = points.second;
         }else {
             point = see(field);
             hunger -= 5;
@@ -176,26 +191,35 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
     std::pair<int,int> point;
 
     for (auto &alive: field.at(points.first).at(points.second)) {
-        if (alive->getType() == state::clown){
+        if (alive->getType() == state::clown && alive != this){
             if(alive->getSex() != living_sex && age >= 3){
                 point.first = points.first;
                 point.second = points.second;
-                alive->setStop();
-                alive->setPropogate();
-                return point;
+                if(allow_propogate && alive->propagate()) {
+                    alive->setStop();
+                    allow_propogate = false;
+                    return point;
+
+                }
             }
         }
     }
 
     if (points.first > 0) {
         for (auto &alive: field.at(points.first - 1).at(points.second)) {
-            if (alive->getType() == state::clown){
+            if(field.at(points.first - 1).at(points.second).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::clown && alive != this){
                 if(alive->getSex() != living_sex && age >= 3){
                     point.first = points.first - 1;
                     point.second = points.second;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
 
@@ -204,13 +228,19 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
     if (points.second > 0) {
         for (auto &alive: field.at(points.first).at(points.second - 1)) {
-            if (alive->getType() == state::clown){
+            if(field.at(points.first).at(points.second-1).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::clown && alive != this){
                 if(alive->getSex() != living_sex && age >= 3){
                     point.first = points.first ;
                     point.second = points.second - 1;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -218,13 +248,19 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
     if (points.first < field.size() - 1) {
         for (auto &alive: field.at(points.first + 1).at(points.second)) {
-            if (alive->getType() == state::clown){
+            if(field.at(points.first + 1).at(points.second).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::clown && alive != this){
                 if(alive->getSex() != living_sex && age >= 3){
                     point.first = points.first + 1;
                     point.second = points.second;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -232,13 +268,19 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
     if (points.second < field.at(0).size()-1) {
         for (auto &alive: field.at(points.first).at(points.second + 1)) {
-            if (alive->getType() == state::clown){
+            if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::clown && alive != this){
                 if(alive->getSex() != living_sex && age >= 3){
                     point.first = points.first;
                     point.second = points.second + 1;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -259,6 +301,9 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
         if (points.first > 0) {
             for (auto &alive: field.at(points.first - 1).at(points.second)) {
+                if(field.at(points.first - 1).at(points.second).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
                         point.first = points.first - 1;
@@ -273,6 +318,9 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
         if (points.second > 0) {
             for (auto &alive: field.at(points.first).at(points.second - 1)) {
+                if(field.at(points.first).at(points.second-1).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
                         point.first = points.first;
@@ -288,6 +336,9 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
         if (points.first < field.size() - 1) {
             for (auto &alive: field.at(points.first + 1).at(points.second)) {
+                if(field.at(points.first + 1).at(points.second).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
                         point.first = points.first + 1;
@@ -302,6 +353,9 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
         if (points.second < field.at(0).size() - 1) {
             for (auto &alive: field.at(points.first).at(points.second + 1)) {
+                if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
                         point.first = points.first;
@@ -320,6 +374,9 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
         if(rands == 0) {
             if (points.first > 0) {
+                if(field.at(points.first - 1).at(points.second).size() > 3){
+                    continue;
+                }
                 point.first = points.first - 1;
                 point.second = points.second;
                 return point;
@@ -328,6 +385,9 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
         if(rands == 1) {
             if (points.second > 0) {
+                if(field.at(points.first).at(points.second-1).size() > 3){
+                    continue;
+                }
                 point.first = points.first ;
                 point.second = points.second - 1;
                 return point;
@@ -336,6 +396,9 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
         if(rands == 2) {
             if (points.first < field.size() - 1) {
+                if(field.at(points.first + 1).at(points.second).size() > 3){
+                    continue;
+                }
                 point.first = points.first + 1;
                 point.second = points.second;
                 return point;
@@ -344,6 +407,9 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
         if(rands == 3) {
             if (points.second < field.at(0).size() - 1) {
+                if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                    continue;
+                }
                 point.first = points.first;
                 point.second = points.second + 1;
                 return point;
@@ -359,17 +425,18 @@ int clown::getSize() {
 sex clown::getSex() {
     return this->living_sex;
 }
-
-bool clown::getEat() {
-    return this->food;
+void clown::victim(living *alives) {
+    this->alives = alives;
 }
 
-void clown::setEat(bool eat) {
-    this->food = eat;
+living* clown::die_from_other() {
+    return nullptr;
 }
+
 
 void clown::setStop() {
     this->stop = true;
+    this->propogate = true;
 }
 
 std::string clown::getName() {
@@ -377,10 +444,28 @@ std::string clown::getName() {
 }
 
 void clown::setPropogate() {
-    this->propogate = true;
+    this->allow_propogate = false;
+    this->propogate = false;
+    this->stop = false;
 }
 
 std::pair<int, int> clown::getPoint() {
     return points;
+}
+
+int clown::getAmouont() {
+    return 0;
+}
+
+bool clown::getCheckStep() {
+    return check_step;
+}
+
+void clown::setCheckStep() {
+    this->check_step = false;
+}
+
+bool clown::getPropogate_state() {
+    return this->propogate;
 }
 

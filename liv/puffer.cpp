@@ -60,9 +60,9 @@ bool puffer::hide(const std::vector<std::vector<std::vector<struct living *>>> &
 
     for (auto &alive: field.at(points.first).at(points.second)) {
         if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-            if (alive->getSize() > 20) {
+            if (alive->getAmouont() > 20) {
                 point_hide.first = points.first;
-                point_hide.second = points.second - 1;
+                point_hide.second = points.second;
                 can_hide = true;
                 return true;
             }
@@ -71,10 +71,13 @@ bool puffer::hide(const std::vector<std::vector<std::vector<struct living *>>> &
 
     if (points.first > 0) {
         for (auto &alive: field.at(points.first - 1).at(points.second)) {
+            if(field.at(points.first - 1).at(points.second).size() > 3){
+                break;
+            }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-                if (alive->getSize() > 20) {
-                    point_hide.first = points.first;
-                    point_hide.second = points.second - 1;
+                if (alive->getAmouont() > 20) {
+                    point_hide.first = points.first - 1;
+                    point_hide.second = points.second;
                     can_hide = true;
                     return true;
                 }
@@ -84,8 +87,11 @@ bool puffer::hide(const std::vector<std::vector<std::vector<struct living *>>> &
 
     if (points.second > 0) {
         for (auto &alive: field.at(points.first).at(points.second - 1)) {
+            if(field.at(points.first).at(points.second-1).size() > 3){
+                break;
+            }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-                if (alive->getSize() > 20) {
+                if (alive->getAmouont() > 20) {
                     point_hide.first = points.first;
                     point_hide.second = points.second - 1;
                     can_hide = true;
@@ -97,10 +103,13 @@ bool puffer::hide(const std::vector<std::vector<std::vector<struct living *>>> &
 
     if (points.first < field.size() - 1) {
         for (auto &alive: field.at(points.first + 1).at(points.second)) {
+            if(field.at(points.first + 1).at(points.second).size() > 3){
+                break;
+            }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-                if (alive->getSize() > 20) {
-                    point_hide.first = points.first;
-                    point_hide.second = points.second - 1;
+                if (alive->getAmouont() > 20) {
+                    point_hide.first = points.first+1;
+                    point_hide.second = points.second;
                     can_hide = true;
                     return true;
                 }
@@ -110,10 +119,13 @@ bool puffer::hide(const std::vector<std::vector<std::vector<struct living *>>> &
 
     if (points.second < field.at(0).size()-1) {
         for (auto &alive: field.at(points.first).at(points.second + 1)) {
+            if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                break;
+            }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
-                if (alive->getSize() > 20) {
-                    point_hide.first = points.first;
-                    point_hide.second = points.second - 1;
+                if (alive->getAmouont() > 20) {
+                    point_hide.first = points.first+1;
+                    point_hide.second = points.second;
                     can_hide = true;
                 }
             }
@@ -124,15 +136,16 @@ bool puffer::hide(const std::vector<std::vector<std::vector<struct living *>>> &
 }
 
 bool puffer::eat(living * who,const std::vector<std::vector<std::vector<struct living *>>> & field) {
-    if(!food) {
+    if(!who->getCheckStep()) {
         if (who->hide(field)) {
-            std::cout << who->who() << " hid)"<<std::endl;
+            std::cout << who->who() << " hid)" << std::endl;
             return false;
         } else {
-            who->setEat(true);
-            who->setStop();
             hunger += 10;
-            std::cout << who->who() << " was eaten("<<std::endl;
+            if(who->getType() != state::corals  && who->getType() != state::kril) {
+                victim(who);
+            }
+            std::cout << who->who() << " was eaten(" << std::endl;
             return true;
         }
     }
@@ -140,12 +153,17 @@ bool puffer::eat(living * who,const std::vector<std::vector<std::vector<struct l
 }
 
 bool puffer::propagate() {
-    return this->propogate;
+    return this->allow_propogate;
 }
 
 std::pair<int, int> puffer::go(const std::vector<std::vector<std::vector<struct living *>>> & field) {
     std::pair<int,int> point;
     step++;
+    check_step = true;
+
+    if(step % 3 == 0){
+        allow_propogate = true;
+    }
 
     if(check_die()){
         std::cout<<who()<<" dies and can't move anywhere"<<std::endl;
@@ -156,9 +174,9 @@ std::pair<int, int> puffer::go(const std::vector<std::vector<std::vector<struct 
             return point_hide;
         }
 
-        if(stop || food){
-            point.first = -1;
-            point.second = -1;
+        if(stop){
+            point.first = points.first;
+            point.second = points.second;
         }else {
             point = see(field);
             hunger -= 5;
@@ -176,26 +194,35 @@ std::pair<int, int> puffer::see(const std::vector<std::vector<std::vector<struct
     std::pair<int,int> point;
 
     for (auto &alive: field.at(points.first).at(points.second)) {
-        if (alive->getType() == state::puffer){
+        if (alive->getType() == state::puffer && alive != this){
             if(alive->getSex() != living_sex && age >= 3){
                 point.first = points.first;
                 point.second = points.second;
-                alive->setStop();
-                alive->setPropogate();
-                return point;
+                if(allow_propogate && alive->propagate()) {
+                    alive->setStop();
+                    allow_propogate = false;
+                    return point;
+
+                }
             }
         }
     }
 
     if (points.first > 0) {
         for (auto &alive: field.at(points.first - 1).at(points.second)) {
-            if (alive->getType() == state::puffer){
+            if(field.at(points.first - 1).at(points.second).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::puffer && alive != this){
                 if(alive->getSex() != living_sex && age >= 3){
                     point.first = points.first - 1;
                     point.second = points.second;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
 
@@ -204,13 +231,19 @@ std::pair<int, int> puffer::see(const std::vector<std::vector<std::vector<struct
 
     if (points.second > 0) {
         for (auto &alive: field.at(points.first).at(points.second - 1)) {
-            if (alive->getType() == state::puffer){
+            if(field.at(points.first).at(points.second-1).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::puffer && alive != this){
                 if(alive->getSex() != living_sex && age >= 3){
                     point.first = points.first ;
                     point.second = points.second - 1;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -218,13 +251,19 @@ std::pair<int, int> puffer::see(const std::vector<std::vector<std::vector<struct
 
     if (points.first < field.size() - 1) {
         for (auto &alive: field.at(points.first + 1).at(points.second)) {
-            if (alive->getType() == state::puffer){
+            if(field.at(points.first + 1).at(points.second).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::puffer && alive != this){
                 if(alive->getSex() != living_sex && age >= 3){
                     point.first = points.first + 1;
                     point.second = points.second;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -232,13 +271,19 @@ std::pair<int, int> puffer::see(const std::vector<std::vector<std::vector<struct
 
     if (points.second < field.at(0).size()-1) {
         for (auto &alive: field.at(points.first).at(points.second + 1)) {
-            if (alive->getType() == state::puffer){
+            if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                break;
+            }
+            if (alive->getType() == state::puffer && alive != this){
                 if(alive->getSex() != living_sex && age >= 3){
                     point.first = points.first;
                     point.second = points.second + 1;
-                    alive->setStop();
-                    alive->setPropogate();
-                    return point;
+                    if(allow_propogate && alive->propagate()) {
+                        alive->setStop();
+                        allow_propogate = false;
+                        return point;
+
+                    }
                 }
             }
         }
@@ -246,6 +291,7 @@ std::pair<int, int> puffer::see(const std::vector<std::vector<std::vector<struct
 
     for (int i = 0; i < 4; i++) {
         for (auto &alive: field.at(points.first).at(points.second)) {
+
             if (alive->getType() == list_of_priority[i]){
                 if(this->size >= alive->getSize()){
                     point.first = points.first;
@@ -259,6 +305,9 @@ std::pair<int, int> puffer::see(const std::vector<std::vector<std::vector<struct
 
         if (points.first > 0) {
             for (auto &alive: field.at(points.first - 1).at(points.second)) {
+                if(field.at(points.first - 1).at(points.second).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
                         point.first = points.first - 1;
@@ -273,6 +322,9 @@ std::pair<int, int> puffer::see(const std::vector<std::vector<std::vector<struct
 
         if (points.second > 0) {
             for (auto &alive: field.at(points.first).at(points.second - 1)) {
+                if(field.at(points.first).at(points.second - 1).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
                         point.first = points.first;
@@ -288,6 +340,9 @@ std::pair<int, int> puffer::see(const std::vector<std::vector<std::vector<struct
 
         if (points.first < field.size() - 1) {
             for (auto &alive: field.at(points.first + 1).at(points.second)) {
+                if(field.at(points.first + 1).at(points.second).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
                         point.first = points.first + 1;
@@ -302,6 +357,9 @@ std::pair<int, int> puffer::see(const std::vector<std::vector<std::vector<struct
 
         if (points.second < field.at(0).size() - 1) {
             for (auto &alive: field.at(points.first).at(points.second + 1)) {
+                if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                    break;
+                }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
                         point.first = points.first;
@@ -321,6 +379,9 @@ std::pair<int, int> puffer::see(const std::vector<std::vector<std::vector<struct
 
         if(rands == 0) {
             if (points.first > 0) {
+                if(field.at(points.first - 1).at(points.second).size() > 3){
+                    continue;
+                }
                 point.first = points.first - 1;
                 point.second = points.second;
                 return point;
@@ -329,6 +390,9 @@ std::pair<int, int> puffer::see(const std::vector<std::vector<std::vector<struct
 
         if(rands == 1) {
             if (points.second > 0) {
+                if(field.at(points.first).at(points.second-1).size() > 3){
+                    continue;
+                }
                 point.first = points.first ;
                 point.second = points.second - 1;
                 return point;
@@ -337,6 +401,9 @@ std::pair<int, int> puffer::see(const std::vector<std::vector<std::vector<struct
 
         if(rands == 2) {
             if (points.first < field.size() - 1) {
+                if(field.at(points.first + 1).at(points.second).size() > 3){
+                    continue;
+                }
                 point.first = points.first + 1;
                 point.second = points.second;
                 return point;
@@ -345,6 +412,9 @@ std::pair<int, int> puffer::see(const std::vector<std::vector<std::vector<struct
 
         if(rands == 3) {
             if (points.second < field.at(0).size() - 1) {
+                if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                    continue;
+                }
                 point.first = points.first;
                 point.second = points.second + 1;
                 return point;
@@ -361,15 +431,17 @@ sex puffer::getSex() {
     return this->living_sex;
 }
 
-bool puffer::getEat() {
-    return this->food;
+void puffer::victim(living *alives) {
+    this->alives = alives;
 }
 
-void puffer::setEat(bool eat) {
-    this->food = eat;
+living* puffer::die_from_other() {
+    return this->alives;
 }
+
 
 void puffer::setStop() {
+    this->propogate = true;
     this->stop = true;
 }
 
@@ -378,10 +450,28 @@ std::string puffer::getName() {
 }
 
 void puffer::setPropogate() {
-    this->propogate = true;
+    this->allow_propogate = false;
+    this->propogate = false;
+    this->stop = false;
 }
 
 std::pair<int, int> puffer::getPoint() {
     return points;
+}
+
+int puffer::getAmouont() {
+    return 0;
+}
+
+bool puffer::getCheckStep() {
+    return check_step;
+}
+
+void puffer::setCheckStep() {
+    this->check_step = false;
+}
+
+bool puffer::getPropogate_state() {
+    return this->propogate;
 }
 

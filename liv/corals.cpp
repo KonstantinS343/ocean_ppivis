@@ -36,6 +36,7 @@ bool corals::eat(living* ,const std::vector<std::vector<std::vector<class living
 }
 
 bool corals::hide(const std::vector<std::vector<std::vector<class living*>>>&) {
+    amount -= 20;
     return false;
 }
 
@@ -53,14 +54,13 @@ std::pair<int, int> corals::see(const std::vector<std::vector<std::vector<struct
 int corals::getSize() {
     return 0;
 }
-
-bool corals::getEat() {
-    return false;
+void corals::victim(living *alive) {
 }
 
-void corals::setEat(bool) {
-    amount -= 20;
+living* corals::die_from_other() {
+    return nullptr;
 }
+
 
 sex corals::getSex() {
     return female;
@@ -82,6 +82,17 @@ std::pair<int, int> corals::getPoint() {
     return std::pair<int, int>();
 }
 
-int corals::getAmount() {
+int corals::getAmouont() {
     return this->amount;
+}
+
+bool corals::getCheckStep() {
+    return false;
+}
+
+void corals::setCheckStep() {
+}
+
+bool corals::getPropogate_state() {
+    return false;
 }

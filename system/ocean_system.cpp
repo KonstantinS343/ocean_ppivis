@@ -100,16 +100,11 @@ void ocean_system::cell_state(int index_2, int index_1) {
     std::cout<<std::endl;
 }
 
-void ocean_system::system_support() {
-
-
-}
-
 int ocean_system::input(int begin, int end){
     int user_input;
     std::cin>>user_input;
 
-    while(user_input < begin + 1 || user_input >= end + 1 ){
+    while(user_input < (begin + 1)  || user_input >= (end + 1) ){
         std::cout<<"Oops, please, check if the input is correct!\n";
         std::cin.clear();
         std::cin.ignore(255,'\n');
@@ -137,26 +132,22 @@ char ocean_system::check_input_char() {
 void ocean_system::next() {
 
     std::pair<int,int> points;
-    int temp[4];
+    int temp[6];
     std::pair<int,int> previous;
 
     for(int i = 0; i < ocean_field.size(); i++){
         for(int j = 0; j < ocean_field.at(i).size(); j++){
             for(auto & alive: ocean_field.at(i).at(j)){
-                if(ocean_field.at(i).at(j).size() == 0){
+
+                if(ocean_field.at(i).at(j).empty()){
                     continue;
                 }
 
-                if(alive == nullptr){
-                    for(auto iterator = ocean_field.at(i).at(j).begin(); iterator != ocean_field.at(i).at(j).end(); iterator++){
-                        if(*iterator == alive) {
-                            ocean_field.at(i).at(j).erase(iterator);
-                            break;
-                        }
-                    }
-                    continue;
-                }
                 if(alive->getType() == 0){
+                    if(alive->getCheckStep()){
+                        continue;
+                    }
+
                     if(alive->check_die()){
                         for(auto iterator = ocean_field.at(i).at(j).begin(); iterator != ocean_field.at(i).at(j).end(); iterator++){
                             if(*iterator == alive) {
@@ -171,33 +162,50 @@ void ocean_system::next() {
                    previous.second = alive->getPoint().second;
 
                    points = alive->go(ocean_field);
-                   if(points.first != -1){
-                       if(previous.first == points.first && previous.second == points.second) {
 
-                       }else{
-                           ocean_field.at(points.first).at(points.second).push_back(alive);
+                    if(previous.first == points.first && previous.second == points.second) {
 
-                           for (auto iterator = ocean_field.at(i).at(j).begin();
-                                iterator != ocean_field.at(i).at(j).end(); iterator++) {
-                               if (*iterator == alive) {
-                                   ocean_field.at(i).at(j).erase(iterator);
-                                   break;
-                               }
-                           }
-                           continue;
-                       }
-                   }
+                    }else{
+                        ocean_field.at(points.first).at(points.second).push_back(alive);
 
-                   if(alive->propagate() && ocean_field.at(i).at(j).size()<4){
-                       temp[0] = 0;
-                       temp[1] = alive->getSex();
-                       temp[2] = 1;
-                       temp[3] = 80;
+                        for (auto iterator = ocean_field.at(i).at(j).begin();
+                             iterator != ocean_field.at(i).at(j).end(); iterator++) {
+                            if (*iterator == alive) {
+                                ocean_field.at(i).at(j).erase(iterator);
+                                break;
+                            }
+                        }
+                        if(alive->die_from_other() != nullptr){
+                            for (auto iterator = ocean_field.at(points.first).at(points.second).begin();
+                                 iterator != ocean_field.at(points.first).at(points.second).end(); iterator++) {
+                                if (*iterator == alive->die_from_other()) {
+                                    ocean_field.at(points.first).at(points.second).erase(iterator);
+                                    break;
+                                }
+                            }
+                            delete alive->die_from_other();
+                            alive->victim(nullptr);
+                        }
+                        continue;
+                    }
+
+                   if(alive->propagate() && ocean_field.at(i).at(j).size()<4 && alive->getPropogate_state()){
+                       temp[0] = points.first;
+                       temp[1] = points.second;
+                       temp[2] = 0;
+                       temp[3] = alive->getSex();
+                       temp[4] = 1;
+                       temp[5] = 80;
                        living *new_life = new class shark(alive->getName(), temp);
+                       std::cout<<"Was born "<<new_life->getName()<<std::endl;
                        ocean_field.at(previous.first).at(previous.second).push_back(new_life);
+                       alive->setPropogate();
                    }
 
                 }else if(alive->getType() == 1){
+                    if(alive->getCheckStep()){
+                        continue;
+                    }
                     if(alive->check_die()){
                         for(auto iterator = ocean_field.at(i).at(j).begin(); iterator != ocean_field.at(i).at(j).end(); iterator++){
                             if(*iterator == alive) {
@@ -211,44 +219,51 @@ void ocean_system::next() {
                     previous.first = alive->getPoint().first;
                     previous.second = alive->getPoint().second;
                     points = alive->go(ocean_field);
-                    if(points.first != -1){
-                        if(previous.first == points.first && previous.second == points.second) {
+                    if(previous.first == points.first && previous.second == points.second) {
 
-                        }else{
-                            ocean_field.at(points.first).at(points.second).push_back(alive);
+                    }else{
+                        ocean_field.at(points.first).at(points.second).push_back(alive);
 
-                            for (auto iterator = ocean_field.at(i).at(j).begin();
-                                 iterator != ocean_field.at(i).at(j).end(); iterator++) {
-                                if (*iterator == alive) {
-                                    ocean_field.at(i).at(j).erase(iterator);
+                        for (auto iterator = ocean_field.at(i).at(j).begin();
+                             iterator != ocean_field.at(i).at(j).end(); iterator++) {
+                            if (*iterator == alive) {
+                                ocean_field.at(i).at(j).erase(iterator);
+                                break;
+                            }
+                        }
+                        if(alive->die_from_other() != nullptr){
+                            for (auto iterator = ocean_field.at(points.first).at(points.second).begin();
+                                 iterator != ocean_field.at(points.first).at(points.second).end(); iterator++) {
+                                if (*iterator == alive->die_from_other()) {
+                                    ocean_field.at(points.first).at(points.second).erase(iterator);
                                     break;
                                 }
                             }
-                            continue;
+                            delete alive->die_from_other();
+                            alive->victim(nullptr);
                         }
-                    }
-
-                    if(alive->getEat()){
-                        for(auto iterator = ocean_field.at(i).at(j).begin(); iterator != ocean_field.at(i).at(j).end(); iterator++){
-                            if(*iterator == alive) {
-                                ocean_field.at(i).at(j).erase(iterator);
-                            }
-                        }
-                        delete alive;
                         continue;
                     }
 
-                    if(alive->propagate() && ocean_field.at(i).at(j).size()<4){
-                        temp[0] = 0;
-                        temp[1] = alive->getSex();
-                        temp[2] = 1;
-                        temp[3] = 80;
-
+                    if(alive->propagate() && ocean_field.at(i).at(j).size()<4 && alive->getPropogate_state()){
+                        temp[0] = previous.first;
+                        temp[1] = previous.second;
+                        temp[2] = 0;
+                        temp[3] = alive->getSex();
+                        temp[4] = 1;
+                        temp[5] = 80;
+                        alive->setPropogate();
                         living *new_life = new class salmon(alive->getName(), temp);
+                        std::cout<<"Was born "<<new_life->getName()<<std::endl;
                         ocean_field.at(previous.first).at(previous.second).push_back(new_life);
+
                     }
 
                 }else if(alive->getType() == 2){
+                    if(alive->getCheckStep()){
+                        continue;
+                    }
+
                     if(alive->check_die()){
                         for(auto iterator = ocean_field.at(i).at(j).begin(); iterator != ocean_field.at(i).at(j).end(); iterator++){
                             if(*iterator == alive) {
@@ -262,42 +277,50 @@ void ocean_system::next() {
                     previous.second = alive->getPoint().second;
 
                     points = alive->go(ocean_field);
-                    if(points.first != -1){
-                        if(previous.first == points.first && previous.second == points.second) {
+                    if(previous.first == points.first && previous.second == points.second) {
 
-                        }else{
-                            ocean_field.at(points.first).at(points.second).push_back(alive);
+                    }else{
+                        ocean_field.at(points.first).at(points.second).push_back(alive);
 
-                            for (auto iterator = ocean_field.at(i).at(j).begin();
-                                 iterator != ocean_field.at(i).at(j).end(); iterator++) {
-                                if (*iterator == alive) {
-                                    ocean_field.at(i).at(j).erase(iterator);
+                        for (auto iterator = ocean_field.at(i).at(j).begin();
+                             iterator != ocean_field.at(i).at(j).end(); iterator++) {
+                            if (*iterator == alive) {
+                                ocean_field.at(i).at(j).erase(iterator);
+                                break;
+                            }
+                        }
+                        if(alive->die_from_other() != nullptr){
+                            for (auto iterator = ocean_field.at(points.first).at(points.second).begin();
+                                 iterator != ocean_field.at(points.first).at(points.second).end(); iterator++) {
+                                if (*iterator == alive->die_from_other()) {
+                                    ocean_field.at(points.first).at(points.second).erase(iterator);
                                     break;
                                 }
                             }
-                            continue;
+                            delete alive->die_from_other();
+                            alive->victim(nullptr);
                         }
-                    }
-                    if(alive->getEat()){
-                        for(auto iterator = ocean_field.at(i).at(j).begin(); iterator != ocean_field.at(i).at(j).end(); iterator++){
-                            if(*iterator == alive) {
-                                ocean_field.at(i).at(j).erase(iterator);
-                            }
-                        }
-                        delete alive;
                         continue;
                     }
 
-                    if(alive->propagate() && ocean_field.at(i).at(j).size()<4){
-                        temp[0] = 0;
-                        temp[1] = alive->getSex();
-                        temp[2] = 1;
-                        temp[3] = 80;
+                    if(alive->propagate() && ocean_field.at(i).at(j).size()<4 && alive->getPropogate_state()){
+                        temp[0] = previous.first;
+                        temp[1] = previous.second;
+                        temp[2] = 0;
+                        temp[3] = alive->getSex();
+                        temp[4] = 1;
+                        temp[5] = 80;
+                        alive->setPropogate();
                         living *new_life = new class clown(alive->getName(), temp);
+                        std::cout<<"Was born "<<new_life->getName()<<std::endl;
                         ocean_field.at(previous.first).at(previous.second).push_back(new_life);
                     }
 
                 }else if(alive->getType() == 3){
+                    if(alive->getCheckStep()){
+                        continue;
+                    }
+
                     if(alive->check_die()){
                         for(auto iterator = ocean_field.at(i).at(j).begin(); iterator != ocean_field.at(i).at(j).end(); iterator++){
                             if(*iterator == alive) {
@@ -311,40 +334,44 @@ void ocean_system::next() {
                     previous.second = alive->getPoint().second;
 
                     points = alive->go(ocean_field);
-                    if(points.first != -1){
-                        if(previous.first == points.first && previous.second == points.second) {
+                    if(previous.first == points.first && previous.second == points.second) {
 
-                        }else{
-                            ocean_field.at(points.first).at(points.second).push_back(alive);
+                    }else{
+                        ocean_field.at(points.first).at(points.second).push_back(alive);
 
-                            for (auto iterator = ocean_field.at(i).at(j).begin();
-                                 iterator != ocean_field.at(i).at(j).end(); iterator++) {
-                                if (*iterator == alive) {
-                                    ocean_field.at(i).at(j).erase(iterator);
+                        for (auto iterator = ocean_field.at(i).at(j).begin();
+                             iterator != ocean_field.at(i).at(j).end(); iterator++) {
+                            if (*iterator == alive) {
+                                ocean_field.at(i).at(j).erase(iterator);
+                                break;
+                            }
+                        }
+                        if(alive->die_from_other() != nullptr){
+                            for (auto iterator = ocean_field.at(points.first).at(points.second).begin();
+                                 iterator != ocean_field.at(points.first).at(points.second).end(); iterator++) {
+                                if (*iterator == alive->die_from_other()) {
+                                    ocean_field.at(points.first).at(points.second).erase(iterator);
                                     break;
                                 }
                             }
-                            continue;
+                            delete alive->die_from_other();
+                            alive->victim(nullptr);
                         }
-                    }
-
-                    if(alive->getEat()){
-                        for(auto iterator = ocean_field.at(i).at(j).begin(); iterator != ocean_field.at(i).at(j).end(); iterator++){
-                            if(*iterator == alive) {
-                                ocean_field.at(i).at(j).erase(iterator);
-                            }
-                        }
-                        delete alive;
                         continue;
                     }
 
-                    if(alive->propagate() && ocean_field.at(i).at(j).size()<4){
-                        temp[0] = 0;
-                        temp[1] = alive->getSex();
-                        temp[2] = 1;
-                        temp[3] = 80;
+                    if(alive->propagate() && ocean_field.at(i).at(j).size()<4 && alive->getPropogate_state()){
+                        temp[0] = previous.first;
+                        temp[1] = previous.second;
+                        temp[2] = 0;
+                        temp[3] = alive->getSex();
+                        temp[4] = 1;
+                        temp[5] = 80;
+                        alive->setPropogate();
                         living *new_life = new class puffer(alive->getName(), temp);
+                        std::cout<<"Was born "<<new_life->getName()<<std::endl;
                         ocean_field.at(previous.first).at(previous.second).push_back(new_life);
+
                     }
 
                 }else if(alive->getType() == 4){
@@ -372,6 +399,10 @@ void ocean_system::next() {
                     }
 
                 }else if(alive->getType() == 6){
+                    if(alive->getCheckStep()){
+                        continue;
+                    }
+
                     if(alive->check_die()){
                         for(auto iterator = ocean_field.at(i).at(j).begin(); iterator != ocean_field.at(i).at(j).end(); iterator++){
                             if(*iterator == alive) {
@@ -385,42 +416,51 @@ void ocean_system::next() {
                     previous.second = alive->getPoint().second;
 
                     points = alive->go(ocean_field);
-                    if(points.first != -1){
-                        if(previous.first == points.first && previous.second == points.second) {
+                    if(previous.first == points.first && previous.second == points.second) {
 
-                        }else{
-                            ocean_field.at(points.first).at(points.second).push_back(alive);
+                    }else{
+                        ocean_field.at(points.first).at(points.second).push_back(alive);
 
-                            for (auto iterator = ocean_field.at(i).at(j).begin();
-                                 iterator != ocean_field.at(i).at(j).end(); iterator++) {
-                                if (*iterator == alive) {
-                                    ocean_field.at(i).at(j).erase(iterator);
+                        for (auto iterator = ocean_field.at(i).at(j).begin();
+                             iterator != ocean_field.at(i).at(j).end(); iterator++) {
+                            if (*iterator == alive) {
+                                ocean_field.at(i).at(j).erase(iterator);
+                                break;
+                            }
+                        }
+                        if(alive->die_from_other() != nullptr){
+                            for (auto iterator = ocean_field.at(points.first).at(points.second).begin();
+                                 iterator != ocean_field.at(points.first).at(points.second).end(); iterator++) {
+                                if (*iterator == alive->die_from_other()) {
+                                    ocean_field.at(points.first).at(points.second).erase(iterator);
                                     break;
                                 }
                             }
-                            continue;
+                            delete alive->die_from_other();
+                            alive->victim(nullptr);
                         }
-                    }
-                    if(alive->getEat()){
-                        for(auto iterator = ocean_field.at(i).at(j).begin(); iterator != ocean_field.at(i).at(j).end(); iterator++){
-                            if(*iterator == alive) {
-                                ocean_field.at(i).at(j).erase(iterator);
-                            }
-                        }
-                        delete alive;
                         continue;
                     }
 
-                    if(alive->propagate() && ocean_field.at(i).at(j).size()<4){
-                        temp[0] = 0;
-                        temp[1] = alive->getSex();
-                        temp[2] = 1;
-                        temp[3] = 80;
+                    if(alive->propagate() && ocean_field.at(i).at(j).size()<4 && alive->getPropogate_state()){
+                        temp[0] = previous.first;
+                        temp[1] = previous.second;
+                        temp[2] = 0;
+                        temp[3] = alive->getSex();
+                        temp[4] = 1;
+                        temp[5] = 80;
+                        alive->setPropogate();
                         living *new_life = new class anchovys(alive->getName(), temp);
+                        std::cout<<"Was born "<<new_life->getName()<<std::endl;
                         ocean_field.at(previous.first).at(previous.second).push_back(new_life);
+
                     }
 
                 }else if(alive->getType() == 7){
+                    if(alive->getCheckStep()){
+                        continue;
+                    }
+
                     if(alive->check_die()){
                         for(auto iterator = ocean_field.at(i).at(j).begin(); iterator != ocean_field.at(i).at(j).end(); iterator++){
                             if(*iterator == alive) {
@@ -457,7 +497,14 @@ void ocean_system::next() {
             }
         }
     }
-    system("clear");
+
+    for(int i = 0; i < ocean_field.size(); i++){
+        for(int j = 0; j < ocean_field.at(i).size(); j++){
+            for(auto & alive: ocean_field.at(i).at(j)) {
+                alive->setCheckStep();
+            }
+        }
+    }
     show_ocean();
 
 }
