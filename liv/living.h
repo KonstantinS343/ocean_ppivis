@@ -4,11 +4,15 @@
 
 #ifndef OCEAN_LIVING_H
 #define OCEAN_LIVING_H
-// удалит seteat geteat дописать удаление и жертву
+
 #include "../oceanfield/ocean.h"
 #include <iostream>
-
 class living;
+
+enum sex{
+    male,
+    female
+};
 
 enum state{
     shark,// 0
@@ -19,11 +23,6 @@ enum state{
     seaweed,// 5
     anchovys,//6
     kril //7
-};
-
-enum sex{
-    male,
-    female
 };
 
 class living{
@@ -67,11 +66,15 @@ public:
     virtual void victim(living*) = 0;
 
     virtual bool getPropogate_state() = 0;
+
+    virtual int getAge() = 0;
+
 };
 
 
 class shark : public living{//акула
 public:
+
     bool hide(const std::vector<std::vector<std::vector<class living*>>>&) override;
 
     std::string who()override;
@@ -116,7 +119,10 @@ public:
 
     bool getPropogate_state() override;
 
-    ~shark();
+    int getAge() override;
+
+    bool size_cell(const std::vector<living*>& cell);
+
 private:
     int age;
 
@@ -194,7 +200,10 @@ public:
 
     bool getPropogate_state() override;
 
-    ~salmon();
+    int getAge() override;
+
+    bool size_cell(const std::vector<living*>& cell);
+
 private:
     int age;
 
@@ -272,7 +281,10 @@ public:
 
     bool getPropogate_state() override;
 
-    ~puffer();
+    int getAge() override;
+
+    bool size_cell(const std::vector<living*>& cell);
+
 private:
     int age;
 
@@ -353,7 +365,10 @@ public:
 
     bool getPropogate_state() override;
 
-    ~clown();
+    int getAge() override;
+
+    bool size_cell(const std::vector<living*>& cell);
+
 private:
     int age;
 
@@ -434,7 +449,10 @@ public:
 
     bool getPropogate_state() override;
 
-    ~anchovys();
+    int getAge() override;
+
+    bool size_cell(const std::vector<living*>& cell);
+
 private:
     int age;
 
@@ -516,7 +534,12 @@ public:
 
     bool getPropogate_state() override;
 
-    ~kril();
+    int getAge() override;
+
+    bool size_cell(const std::vector<living*>& cell);
+
+    bool check_kril();
+
 private:
 
     std::string name;
@@ -532,6 +555,7 @@ private:
     bool stop = false;
 
     bool check_step = false;
+
 };
 
 class corals : public living{
@@ -580,7 +604,8 @@ public:
 
     bool getPropogate_state() override;
 
-    ~corals();
+    int getAge() override;
+
 private:
     int amount;
 
@@ -637,7 +662,8 @@ public:
 
     bool getPropogate_state() override;
 
-    ~seaweed();
+    int getAge() override;
+
 private:
     int amount;
 
@@ -648,5 +674,4 @@ private:
     const state type = state::seaweed;
 
 };
-
 #endif //OCEAN_LIVING_H

@@ -3,6 +3,21 @@
 //
 #include "living.h"
 
+bool clown::size_cell(const std::vector<living*>& cell){
+    int counter = 0;
+    for(auto & alive: cell){
+        if(alive != nullptr){
+            counter++;
+        }
+    }
+
+    if(counter == 4){
+        return true;
+    }else{
+        return false;
+    }
+}
+
 clown::clown(std::string name, int temp[]) {
     this->name = name;
     this->age = temp[2];
@@ -40,11 +55,6 @@ bool clown::check_die() {
         return  false;
     };
 }
-
-clown::~clown() {
-    delete this;
-}
-
 std::string clown::getInfo() {
     return "Age: " + std::to_string(this->age) + "\tSize: " + std::to_string(this->size)+
            "\tSex: " + std::to_string(this->living_sex) + "\tHunger: " + std::to_string(this->hunger);
@@ -58,11 +68,18 @@ bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & 
     can_hide = false;
 
     for (auto &alive: field.at(points.first).at(points.second)) {
+        if (size_cell(field.at(points.first).at(points.second))){
+            break;
+        }
+        if(alive == nullptr){
+            continue;
+        }
         if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
             if (alive->getAmouont() > 20) {
                 point_hide.first = points.first;
                 point_hide.second = points.second;
                 can_hide = true;
+                std::cout << who() << " hid)"<<std::endl;
                 return true;
             }
         }
@@ -70,14 +87,18 @@ bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & 
 
     if (points.first > 0) {
         for (auto &alive: field.at(points.first - 1).at(points.second)) {
-            if(field.at(points.first - 1).at(points.second).size() > 3){
+            if (size_cell(field.at(points.first-1).at(points.second))){
                 break;
+            }
+            if(alive == nullptr){
+                continue;
             }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
                 if (alive->getAmouont() > 20) {
                     point_hide.first = points.first - 1;
                     point_hide.second = points.second;
                     can_hide = true;
+                    std::cout << who() << " hid)"<<std::endl;
                     return true;
                 }
             }
@@ -86,14 +107,18 @@ bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & 
 
     if (points.second > 0) {
         for (auto &alive: field.at(points.first).at(points.second - 1)) {
-            if(field.at(points.first).at(points.second-1).size() > 3){
+            if (size_cell(field.at(points.first).at(points.second-1))){
                 break;
+            }
+            if(alive == nullptr){
+                continue;
             }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
                 if (alive->getAmouont() > 20) {
                     point_hide.first = points.first;
                     point_hide.second = points.second - 1;
                     can_hide = true;
+                    std::cout << who() << " hid)"<<std::endl;
                     return true;
                 }
             }
@@ -102,14 +127,19 @@ bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & 
 
     if (points.first < field.size() - 1) {
         for (auto &alive: field.at(points.first + 1).at(points.second)) {
-            if(field.at(points.first + 1).at(points.second).size() > 3){
+            if (size_cell(field.at(points.first+1).at(points.second))){
                 break;
             }
+            if(alive == nullptr){
+                continue;
+            }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
+
                 if (alive->getAmouont() > 20) {
                     point_hide.first = points.first+1;
                     point_hide.second = points.second;
                     can_hide = true;
+                    std::cout << who() << " hid)"<<std::endl;
                     return true;
                 }
             }
@@ -118,14 +148,19 @@ bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & 
 
     if (points.second < field.at(0).size()-1) {
         for (auto &alive: field.at(points.first).at(points.second + 1)) {
-            if(field.at(points.first ).at(points.second+ 1).size() > 3){
+            if (size_cell(field.at(points.first).at(points.second+1))){
                 break;
+            }
+            if(alive == nullptr){
+                continue;
             }
             if (alive->getType() == state::corals || alive->getType() == state::seaweed) {
                 if (alive->getAmouont() > 20) {
-                    point_hide.first = points.first+1;
-                    point_hide.second = points.second;
+                    point_hide.first = points.first;
+                    point_hide.second = points.second+1;
                     can_hide = true;
+                    std::cout << who() << " hid)"<<std::endl;
+                    return true;
                 }
             }
         }
@@ -137,7 +172,6 @@ bool clown::hide(const std::vector<std::vector<std::vector<struct living *>>> & 
 bool clown::eat(living * who,const std::vector<std::vector<std::vector<struct living *>>> & field) {
     if(!who->getCheckStep()) {
         if (who->hide(field)) {
-            std::cout << who->who() << " hid)" << std::endl;
             return false;
         } else {
             hunger += 10;
@@ -158,41 +192,45 @@ std::pair<int, int> clown::go(const std::vector<std::vector<std::vector<struct l
     step++;
     check_step = true;
 
+
     if(step % 3 == 0){
         allow_propogate = true;
     }
-
-    if(check_die()){
-        std::cout<<who()<<" dies and can't move anywhere"<<std::endl;
-        return points;
-    }else{
-
-        if(point_hide.first != -1 && can_hide){
-            return point_hide;
-        }
-
-        if(stop){
-            point.first = points.first;
-            point.second = points.second;
-        }else {
-            point = see(field);
-            hunger -= 5;
-            if (step % 2 == 0) {
-                age++;
-            }
-            points.first = point.first;
-            points.second = point.second;
-        }
-        return point;
+    if (step % 2 == 0) {
+        age++;
     }
+    if(age == 0){
+        return points;
+    }
+    if(point_hide.first != -1 && can_hide){
+        return point_hide;
+    }
+
+    if(stop){
+        point.first = points.first;
+        point.second = points.second;
+    }else {
+        point = see(field);
+        hunger -= 5;
+        points.first = point.first;
+        points.second = point.second;
+    }
+    return point;
 }
 
 std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct living *>>> & field) {
+    srand(time(NULL));
     std::pair<int,int> point;
 
     for (auto &alive: field.at(points.first).at(points.second)) {
+        if (size_cell(field.at(points.first).at(points.second))){
+            break;
+        }
+        if(alive == nullptr){
+            continue;
+        }
         if (alive->getType() == state::clown && alive != this){
-            if(alive->getSex() != living_sex && age >= 3){
+            if(alive->getSex() != living_sex && age >= 3 && alive->getAge() >= 3){
                 point.first = points.first;
                 point.second = points.second;
                 if(allow_propogate && alive->propagate()) {
@@ -207,11 +245,14 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
     if (points.first > 0) {
         for (auto &alive: field.at(points.first - 1).at(points.second)) {
-            if(field.at(points.first - 1).at(points.second).size() > 3){
+            if (size_cell(field.at(points.first-1).at(points.second))){
                 break;
             }
+            if(alive == nullptr){
+                continue;
+            }
             if (alive->getType() == state::clown && alive != this){
-                if(alive->getSex() != living_sex && age >= 3){
+                if(alive->getSex() != living_sex && age >= 3 && alive->getAge() >= 3){
                     point.first = points.first - 1;
                     point.second = points.second;
                     if(allow_propogate && alive->propagate()) {
@@ -228,11 +269,14 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
     if (points.second > 0) {
         for (auto &alive: field.at(points.first).at(points.second - 1)) {
-            if(field.at(points.first).at(points.second-1).size() > 3){
+            if (size_cell(field.at(points.first).at(points.second-1))){
                 break;
             }
+            if(alive == nullptr){
+                continue;
+            }
             if (alive->getType() == state::clown && alive != this){
-                if(alive->getSex() != living_sex && age >= 3){
+                if(alive->getSex() != living_sex && age >= 3 && alive->getAge() >= 3){
                     point.first = points.first ;
                     point.second = points.second - 1;
                     if(allow_propogate && alive->propagate()) {
@@ -248,11 +292,14 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
     if (points.first < field.size() - 1) {
         for (auto &alive: field.at(points.first + 1).at(points.second)) {
-            if(field.at(points.first + 1).at(points.second).size() > 3){
+            if (size_cell(field.at(points.first+1).at(points.second))){
                 break;
             }
+            if(alive == nullptr){
+                continue;
+            }
             if (alive->getType() == state::clown && alive != this){
-                if(alive->getSex() != living_sex && age >= 3){
+                if(alive->getSex() != living_sex && age >= 3 && alive->getAge() >= 3){
                     point.first = points.first + 1;
                     point.second = points.second;
                     if(allow_propogate && alive->propagate()) {
@@ -268,11 +315,14 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
     if (points.second < field.at(0).size()-1) {
         for (auto &alive: field.at(points.first).at(points.second + 1)) {
-            if(field.at(points.first ).at(points.second+ 1).size() > 3){
+            if (size_cell(field.at(points.first).at(points.second+1))){
                 break;
             }
+            if(alive == nullptr){
+                continue;
+            }
             if (alive->getType() == state::clown && alive != this){
-                if(alive->getSex() != living_sex && age >= 3){
+                if(alive->getSex() != living_sex && age >= 3 && alive->getAge() >= 3){
                     point.first = points.first;
                     point.second = points.second + 1;
                     if(allow_propogate && alive->propagate()) {
@@ -288,6 +338,12 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
     for (int i = 0; i < 2; i++) {
         for (auto &alive: field.at(points.first).at(points.second)) {
+            if (size_cell(field.at(points.first).at(points.second))){
+                break;
+            }
+            if(alive == nullptr){
+                continue;
+            }
             if (alive->getType() == list_of_priority[i]){
                 if(this->size >= alive->getSize()){
                     point.first = points.first;
@@ -301,8 +357,11 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
         if (points.first > 0) {
             for (auto &alive: field.at(points.first - 1).at(points.second)) {
-                if(field.at(points.first - 1).at(points.second).size() > 3){
+                if (size_cell(field.at(points.first-1).at(points.second))){
                     break;
+                }
+                if(alive == nullptr){
+                    continue;
                 }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
@@ -318,8 +377,11 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
         if (points.second > 0) {
             for (auto &alive: field.at(points.first).at(points.second - 1)) {
-                if(field.at(points.first).at(points.second-1).size() > 3){
+                if (size_cell(field.at(points.first).at(points.second-1))){
                     break;
+                }
+                if(alive == nullptr){
+                    continue;
                 }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
@@ -336,8 +398,11 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
         if (points.first < field.size() - 1) {
             for (auto &alive: field.at(points.first + 1).at(points.second)) {
-                if(field.at(points.first + 1).at(points.second).size() > 3){
+                if (size_cell(field.at(points.first+1).at(points.second))){
                     break;
+                }
+                if(alive == nullptr){
+                    continue;
                 }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
@@ -353,8 +418,11 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
 
         if (points.second < field.at(0).size() - 1) {
             for (auto &alive: field.at(points.first).at(points.second + 1)) {
-                if(field.at(points.first ).at(points.second+ 1).size() > 3){
+                if (size_cell(field.at(points.first).at(points.second+1))){
                     break;
+                }
+                if(alive == nullptr){
+                    continue;
                 }
                 if (alive->getType() == list_of_priority[i]) {
                     if (this->size >= alive->getSize()) {
@@ -369,51 +437,72 @@ std::pair<int, int> clown::see(const std::vector<std::vector<std::vector<struct 
         }
     }
 
+
     while(true) {
-        int rands = rand() % 4;
+        int rands = rand() % 5;
 
         if(rands == 0) {
             if (points.first > 0) {
-                if(field.at(points.first - 1).at(points.second).size() > 3){
-                    continue;
+                for (auto &alive: field.at(points.first - 1).at(points.second)) {
+                    if (alive == nullptr) {
+                        continue;
+                    }
                 }
-                point.first = points.first - 1;
-                point.second = points.second;
-                return point;
+                if (!size_cell(field.at(points.first-1).at(points.second))){
+                    point.first = points.first - 1;
+                    point.second = points.second;
+                    return point;
+                }
             }
         }
 
         if(rands == 1) {
             if (points.second > 0) {
-                if(field.at(points.first).at(points.second-1).size() > 3){
-                    continue;
+                for (auto &alive: field.at(points.first).at(points.second - 1)) {
+                    if (alive == nullptr) {
+                        continue;
+                    }
                 }
-                point.first = points.first ;
-                point.second = points.second - 1;
-                return point;
+                if (!size_cell(field.at(points.first).at(points.second-1))){
+                    point.first = points.first ;
+                    point.second = points.second - 1;
+                    return point;
+                }
             }
         }
 
         if(rands == 2) {
             if (points.first < field.size() - 1) {
-                if(field.at(points.first + 1).at(points.second).size() > 3){
-                    continue;
+                for (auto &alive: field.at(points.first + 1).at(points.second)) {
+                    if (alive == nullptr) {
+                        continue;
+                    }
                 }
-                point.first = points.first + 1;
-                point.second = points.second;
-                return point;
+                if (!size_cell(field.at(points.first+1).at(points.second))) {
+                    point.first = points.first + 1;
+                    point.second = points.second;
+                    return point;
+                }
             }
         }
 
         if(rands == 3) {
             if (points.second < field.at(0).size() - 1) {
-                if(field.at(points.first ).at(points.second+ 1).size() > 3){
-                    continue;
+                for (auto &alive: field.at(points.first).at(points.second+1)) {
+                    if (alive == nullptr) {
+                        continue;
+                    }
                 }
-                point.first = points.first;
-                point.second = points.second + 1;
-                return point;
+                if (!size_cell(field.at(points.first).at(points.second+1))){
+                    point.first = points.first;
+                    point.second = points.second + 1;
+                    return point;
+                }
             }
+        }
+
+        if(rands == 4){
+            return points;
         }
     }
 }
@@ -467,5 +556,9 @@ void clown::setCheckStep() {
 
 bool clown::getPropogate_state() {
     return this->propogate;
+}
+
+int clown::getAge() {
+    return this->age;
 }
 

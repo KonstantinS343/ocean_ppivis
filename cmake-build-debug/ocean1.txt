@@ -1,0 +1,14 @@
+3
+3
+0 0 salmon 3 0 2 80 Серега
+0 0 salmon 5 1 2 60 Аня
+0 1 corals 20
+0 1 puffer 7 0 1 60 Киря
+1 0 anchovys 12 0 0 30 Антон
+1 0 puffer 1 1 2 10 Ира
+1 1 clown 3 1 1 30 Лиза
+1 1 salmon 10 0 6 100 Стасик
+1 2 seaweed 40
+1 2 anchovys 14 1 0 70 Лера
+2 1 clown 4 1 0 100 Даша
+2 2 shark 20 1 8 70 Ариана

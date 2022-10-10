@@ -9,7 +9,7 @@
 #include "../liv/living.h"
 #include "../oceanfield/ocean.h"
 
-class ocean_system : public ocean {
+class ocean_system : public ocean{
 public:
     void run();
 
@@ -22,6 +22,8 @@ public:
     char check_input_char();
 
     void next();
+
+    void move(std::vector<class living*> &);
 
 };
 

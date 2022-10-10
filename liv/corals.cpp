@@ -20,10 +20,6 @@ bool corals::check_die() {
     return false;
 }
 
-corals::~corals() {
-    delete this;
-}
-
 std::string corals::getInfo() {return "\tHP: "+std::to_string(this->amount);}
 
 
@@ -42,7 +38,9 @@ bool corals::hide(const std::vector<std::vector<std::vector<class living*>>>&) {
 
 std::pair<int, int> corals::go(const std::vector<std::vector<std::vector<struct living *>>> &) {
     step++;
-
+    if(step % 10 == 0){
+        amount = -1;
+    }
     std::pair<int,int> points(0,0);
     return points;
 }
@@ -95,4 +93,8 @@ void corals::setCheckStep() {
 
 bool corals::getPropogate_state() {
     return false;
+}
+
+int corals::getAge() {
+    return 0;
 }

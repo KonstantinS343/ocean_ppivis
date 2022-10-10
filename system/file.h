@@ -7,8 +7,9 @@
 
 #include "ocean_system.h"
 
-class file : public ocean_system{
+class file : public ocean_system {
 public:
+
     file(std::fstream& file){
         std::string strtemp, strname, strtype;
         int temp[6],counter=0;
@@ -51,6 +52,13 @@ public:
             if(counter==0){
                 ocean_field.at(temp[0]).at(temp[1]).
                         push_back(fill_field(strname,strtype,temp));
+            }
+        }
+        for(int i = 0; i < ocean_field.size(); i++){
+            for(int j = 0; j < ocean_field.at(i).size(); j++){
+                while(ocean_field.at(i).at(j).size() < 4){
+                    ocean_field.at(i).at(j).push_back(nullptr);
+                }
             }
         }
     }

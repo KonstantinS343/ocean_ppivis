@@ -13,17 +13,15 @@ std::string seaweed::who() {return "водоросли "+name;}
 std::pair<int,int> seaweed::go(const std::vector<std::vector<std::vector<class living*>>>& field) {
 
     step++;
-
+    if(step % 10 == 0){
+        amount = -1;
+    }
     std::pair<int,int> points(0,0);
     return points;
 }
 
 bool seaweed::check_die() {
     return true;
-}
-
-seaweed::~seaweed() {
-    delete this;
 }
 
 std::string seaweed::getInfo() {return "\tHP: "+std::to_string(this->amount);}
@@ -93,5 +91,9 @@ living* seaweed::die_from_other() {
 
 bool seaweed::getPropogate_state() {
     return false;
+}
+
+int seaweed::getAge() {
+    return 0;
 }
 

@@ -5,9 +5,10 @@
 #include "ocean.h"
 #include <iostream>
 
+
 living* ocean::fill_field(const std::string& name, const std::string& type, int temp[]) {
 
-    try{
+    try {
         if(type == "shark"){
             return new class shark(name, temp);
 
@@ -30,23 +31,19 @@ living* ocean::fill_field(const std::string& name, const std::string& type, int 
             return new  class seaweed(temp);
 
         }else if(type == "kril"){
-            return new  class kril(temp);
+            return new class kril(temp);
         }else{
             throw Exception("Something, went wrong");
         }
-    }catch (std::exception& exception){
-        std::cout<<exception.what()<<std::endl;
-        std::cout<<"Please, check you data from file!"<<std::endl;
+
+    } catch (std::exception &exception) {
+        std::cout << exception.what() << std::endl;
+        std::cout << "Please, check you data from file!" << std::endl;
         sleep(5);
         return nullptr;
     }
 
 }
-
-ocean::~ocean() {
-    delete this;
-}
-
 void ocean::delete_ocean() {
 
     for(int i = 0; i < ocean_field.size(); i++){

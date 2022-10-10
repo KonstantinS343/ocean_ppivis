@@ -23,8 +23,6 @@ public:
 
     void delete_ocean(); // удаление поля
 
-    ~ocean();
-
 protected:
     std::vector<std::vector<std::vector<class living*>>> ocean_field; // поле океана
 };
